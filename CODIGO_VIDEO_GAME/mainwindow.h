@@ -2,40 +2,34 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "Level1Widget.h"
+#include "Level2Widget.h"
+#include "Level3Widget.h"
 
-class QStackedWidget;
-class QWidget;
-class QPushButton;
-class QLabel;
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-protected:
-    void resizeEvent(QResizeEvent *event) override;
-
 private slots:
-    void onLevel1();
-    void onLevel2();
-    void onLevel3();
-    void onBackToMenu();
+    void openLevel1();
+    void openLevel2();
+    void openLevel3();
+    void returnToMenu();
 
 private:
-    void setupMenu();
-    QWidget* createLevelWidget(int level);
+    Ui::MainWindow *ui;
 
-    QStackedWidget *stack;
-    QWidget *menuWidget;
-    QPushButton *backButton;
-
-    // botones del menu (opcional para futuros cambios)
-    QPushButton *btnLevel1;
-    QPushButton *btnLevel2;
-    QPushButton *btnLevel3;
+    Level1Widget *level1;
+    Level2Widget *level2;
+    Level3Widget *level3;
 };
 
 #endif // MAINWINDOW_H
