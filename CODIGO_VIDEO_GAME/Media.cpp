@@ -8,7 +8,11 @@ Media::Media() {
 void Media::cargarMedia() {
     // Aquí asignas rutas o inicializas QMediaPlayer si quieres
     cancion_nivel = "";
-    background_nivel = "";
+    // Establecer fondo por defecto para el nivel actual (Nivel 1)
+    // Usar recurso embebido para evitar problemas de rutas relativas
+    background_nivel = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/Backgraund/fon1.jpg";
+
+    jugador1_sprite = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/Car1.png";
     sonido_arresto = "";
     sonido_choque = "";
     sonido_trofeo = "";
