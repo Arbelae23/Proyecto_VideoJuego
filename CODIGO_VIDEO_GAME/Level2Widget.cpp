@@ -13,28 +13,18 @@ Level2Widget::Level2Widget(QWidget *parent)
     inter.contador_vidas = 3;
 
     media.cargarMedia();
-
-    // ⛔ NO LLAMES setupEnemies() AQUÍ
-    // width() y height() = 0 → enemigos salen mal colocados
+    // Crear enemigos una vez que el widget esté listo (sin usar resizeEvent)
+    QTimer::singleShot(0, this, [this]{
+        if (!enemigosCreados) {
+            setupEnemies();
+            enemigosCreados = true;
+        }
+    });
 
     connect(&timer, &QTimer::timeout, this, &Level2Widget::onTick);
     timer.start(int(dt*1000));
 }
 
-
-// ---------------------------------------------------------------------
-//  NUEVO: Crear enemigos solo cuando el widget ya tiene tamaño real
-// ---------------------------------------------------------------------
-void Level2Widget::resizeEvent(QResizeEvent *ev)
-{
-    QWidget::resizeEvent(ev);
-
-    if (!enemigosCreados)
-    {
-        setupEnemies();
-        enemigosCreados = true;
-    }
-}
 
 
 // ---------------------------------------------------------------------

@@ -18,6 +18,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected:
+
+
 private slots:
     void openLevel1();
     void openLevel2();

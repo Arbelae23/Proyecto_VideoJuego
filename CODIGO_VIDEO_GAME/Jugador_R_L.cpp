@@ -1,4 +1,5 @@
 #include "Jugador_R_L.h"
+#include <QPixmap>
 
 Jugador_R_L::Jugador_R_L()
     : vidas(3), rect(100, 100, 50, 80), skin(""), carril(0), speed(8)
@@ -14,7 +15,15 @@ void Jugador_R_L::moverIzquierda() {
 
 void Jugador_R_L::draw(QPainter &p) {
     if (!skin.isEmpty()) {
-        // Aquí podrías cargar y dibujar un QPixmap
+        QPixmap sprite(skin);
+        if (!sprite.isNull()) {
+            // Dibujar el sprite escalado al rect del jugador
+            p.drawPixmap(rect, sprite);
+        } else {
+            // Fallback a rect azul si falla la carga
+            p.setBrush(Qt::blue);
+            p.drawRect(rect);
+        }
     } else {
         p.setBrush(Qt::blue);
         p.drawRect(rect);

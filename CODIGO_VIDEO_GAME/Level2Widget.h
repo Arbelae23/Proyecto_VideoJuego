@@ -35,7 +35,7 @@ private:
     void checkCollisions();
 
 protected:
-     void resizeEvent(QResizeEvent *event) override;
+
 };
 
 #endif // LEVEL2WIDGET_H
