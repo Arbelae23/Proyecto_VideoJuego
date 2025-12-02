@@ -2,28 +2,25 @@
 #define JUGADOR_R_L_H
 
 #include <QRect>
+#include <QString>
 #include <QPainter>
 
 class Jugador_R_L {
 public:
     Jugador_R_L();
 
-    // atributos basicos
     int vidas;
-    QRect rect;      // posicion y tamaño en pixeles del jugador
-    QString skin;    // nombre o ruta de sprite (vacío = rect simple)
-    int carril;      // opcional para niveles con carriles
+    QRect rect;
+    QString skin;
+    int carril;
+    float speed;
 
-    // movimiento
-    int speed;
-
-    // metodos
     void moverDerecha();
     void moverIzquierda();
     void draw(QPainter &p);
-    QRect getBounds() const { return rect; }
+    void quitarVida(int d);
 
-    void quitarVida(int d = 1);
+    QRect getBounds() const { return rect; }
 };
 
-#endif // JUGADOR_R_L_H
+#endif

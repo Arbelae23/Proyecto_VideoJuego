@@ -14,7 +14,7 @@ void Jugador_R_L::moverIzquierda() {
 
 void Jugador_R_L::draw(QPainter &p) {
     if (!skin.isEmpty()) {
-        // Aquí podrías cargar y dibujar un QPixmap
+        // Aquí dibujarías un QPixmap si lo deseas
     } else {
         p.setBrush(Qt::blue);
         p.drawRect(rect);
