@@ -9,6 +9,7 @@ public:
 
     QString cancion_nivel;
     QString background_nivel;
+    QString jugador1_sprite;
     QString sonido_arresto;
     QString sonido_choque;
     QString sonido_trofeo;

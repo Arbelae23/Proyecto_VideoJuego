@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="/Backgraund">
+    <file>Backgraund/fon1.jpg</file>
+    <file>Backgraund/fon2.png</file>
+    <file>Backgraund/fon3.png</file>
+  </qresource>
+  <qresource prefix="/sprite">
+    <file>sprite/Car1.png</file>
+  </qresource>
+</RCC>

@@ -8,6 +8,7 @@
 #include "Interacciones.h"
 #include "Media.h"
 #include <vector>
+#include <QPixmap>
 
 class Level1Widget : public QWidget {
     Q_OBJECT
@@ -28,6 +29,8 @@ private:
     Jugador_R_L jugador;
     Interacciones inter;
     Media media;
+    QPixmap background;  // imagen de fondo del nivel
+
 
     std::vector<Enemigos> enemigos; // obstáculos móviles simples
     void spawnEnemies();

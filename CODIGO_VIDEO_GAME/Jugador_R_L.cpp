@@ -1,4 +1,5 @@
 #include "Jugador_R_L.h"
+#include <QPixmap>
 
 Jugador_R_L::Jugador_R_L()
     : vidas(3), rect(100, 100, 50, 80), skin(""), carril(0), speed(8)

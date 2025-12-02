@@ -6,29 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>650</height>
+    <width>1600</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>La Revolución Automotriz</string>
   </property>
-
   <widget class="QWidget" name="centralwidget">
-
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>50</y>
-      <width>1000</width>
-      <height>600</height>
+      <width>1600</width>
+      <height>900</height>
      </rect>
     </property>
-
-    <!-- PAGE 0: MENU -->
     <widget class="QWidget" name="pageMenu">
-
      <widget class="QLabel" name="labelTitle">
       <property name="geometry">
        <rect>
@@ -38,17 +33,16 @@
         <height>60</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font-size:32px; font-weight:bold;</string>
+      </property>
       <property name="text">
        <string>LA REVOLUCIÓN AUTOMOTRIZ</string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font-size:32px; font-weight:bold;</string>
+       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
-
      <widget class="QPushButton" name="btnLevel1">
       <property name="geometry">
        <rect>
@@ -58,9 +52,10 @@
         <height>50</height>
        </rect>
       </property>
-      <property name="text"><string>NIVEL 1</string></property>
+      <property name="text">
+       <string>NIVEL 1</string>
+      </property>
      </widget>
-
      <widget class="QPushButton" name="btnLevel2">
       <property name="geometry">
        <rect>
@@ -70,9 +65,10 @@
         <height>50</height>
        </rect>
       </property>
-      <property name="text"><string>NIVEL 2</string></property>
+      <property name="text">
+       <string>NIVEL 2</string>
+      </property>
      </widget>
-
      <widget class="QPushButton" name="btnLevel3">
       <property name="geometry">
        <rect>
@@ -82,21 +78,15 @@
         <height>50</height>
        </rect>
       </property>
-      <property name="text"><string>NIVEL 3</string></property>
+      <property name="text">
+       <string>NIVEL 3</string>
+      </property>
      </widget>
-
     </widget>
-
-    <!-- PAGE 1 level1 -->
     <widget class="QWidget" name="pageLevel1"/>
-    <!-- PAGE 2 level2 -->
     <widget class="QWidget" name="pageLevel2"/>
-    <!-- PAGE 3 level3 -->
     <widget class="QWidget" name="pageLevel3"/>
-
    </widget>
-
-   <!-- BACK BUTTON -->
    <widget class="QPushButton" name="btnBack">
     <property name="geometry">
      <rect>
@@ -110,9 +100,7 @@
      <string>Volver al menú</string>
     </property>
    </widget>
-
   </widget>
-
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>

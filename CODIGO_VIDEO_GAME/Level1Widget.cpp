@@ -14,6 +14,27 @@ Level1Widget::Level1Widget(QWidget *parent)
 
     inter.contador_vidas = jugador.vidas;
     media.cargarMedia();
+    // Cargar imagen de fondo usando la ruta definida en Media
+    background.load(media.background_nivel);
+    // Asignar sprite del jugador desde Media (jugador 1)
+    jugador.skin = media.jugador1_sprite;
+    // Ajustar tamaño del jugador (hitbox) basado en el sprite y escalarlo más grande
+    {
+        QPixmap carPix(media.jugador1_sprite);
+        if (!carPix.isNull()) {
+            const double scale = 0.5; // hacer el coche más grande
+            const int newW = qRound(carPix.width() * scale);
+            const int newH = qRound(carPix.height() * scale);
+            const int floorH = 60;    // altura del suelo dibujado
+            const int margin = 20;    // margen sobre el suelo
+            jugador.rect = QRect(
+                (width()/2) - newW/2,
+                height() - floorH - margin - newH,
+                newW,
+                newH
+            );
+        }
+    }
     // spawn algunos enemigos (lineales desde la izquierda)
     spawnEnemies();
 
@@ -77,7 +98,13 @@ void Level1Widget::checkCollisions() {
 
 void Level1Widget::paintEvent(QPaintEvent *) {
     QPainter p(this);
-    p.fillRect(rect(), QColor(240,240,240));
+    // Dibujar fondo si está disponible, de lo contrario usar color plano
+    if (!background.isNull()) {
+        p.drawPixmap(rect(), background, background.rect());
+        //p.drawPixmap(QRect(0, 0, 1600, 900), background, background.rect());
+    } else {
+        p.fillRect(rect(), QColor(240,240,240));
+    }
 
     // actualizar jugador dibujo (asegurar su Y en resize)
     if (jugador.rect.top() == 100) { // posición por defecto; forzar a bottom on first draw
@@ -100,10 +127,11 @@ void Level1Widget::paintEvent(QPaintEvent *) {
 }
 
 void Level1Widget::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Left) {
+    const int key = event->key();
+    if (key == Qt::Key_A || key == Qt::Key_Left) {
         jugador.moverIzquierda();
         if (jugador.getBounds().left() < 0) jugador.rect.moveLeft(0);
-    } else if (event->key() == Qt::Key_Right) {
+    } else if (key == Qt::Key_D || key == Qt::Key_Right) {
         jugador.moverDerecha();
         if (jugador.getBounds().right() > width()) jugador.rect.moveRight(width() - jugador.rect.width());
     }
