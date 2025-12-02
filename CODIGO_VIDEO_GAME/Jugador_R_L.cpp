@@ -15,15 +15,7 @@ void Jugador_R_L::moverIzquierda() {
 
 void Jugador_R_L::draw(QPainter &p) {
     if (!skin.isEmpty()) {
-        QPixmap sprite(skin);
-        if (!sprite.isNull()) {
-            // Dibujar el sprite escalado al rect del jugador
-            p.drawPixmap(rect, sprite);
-        } else {
-            // Fallback a rect azul si falla la carga
-            p.setBrush(Qt::blue);
-            p.drawRect(rect);
-        }
+        // Aquí dibujarías un QPixmap si lo deseas
     } else {
         p.setBrush(Qt::blue);
         p.drawRect(rect);
