@@ -6,10 +6,35 @@ Level3Widget::Level3Widget(QWidget *parent)
     : QWidget(parent), dt(0.016)
 {
     setFocusPolicy(Qt::StrongFocus);
-    jugador.rect = QRect( (width()/2)-20, height()-170, 40, 120 );
+    // Valores fijos para la carretera (modifica a tu gusto)
+    roadX = 180;        // px desde la izquierda
+    roadWidth = 1000;    // px de ancho
+
+    // Inicializar jugador centrado en la carretera, más abajo (margen inferior fijo)
+    {
+        // Inicial posicion sólo para tener ancho/alto; ajustamos vertical en paintEvent
+        const int w = 120;   // ancho aumentado
+        const int h = 320;  // alto aumentado
+        jugador.rect = QRect(
+            roadX + roadWidth/2 - w/2,
+            0,
+            w,
+            h
+        );
+    }
     jugador.speed = 12;
     inter.contador_vidas = 3;
     media.cargarMedia();
+    // Cargar imagen de fondo de Nivel 3 desde Media
+    background.load(media.background_nivel3);
+
+    // Estado inicial de animación y sprite (idle)
+    currentFrame = 0;
+    desiredFrame = 0;
+    jugador.skin = media.jugador3_sprite0;
+
+    // Paso de animación fijo (ms)
+    animStepMs = 83;
 
     spawnObstacles();
 
@@ -44,6 +69,18 @@ void Level3Widget::onTick() {
         }
     }
     checkCollisions();
+
+    // Temporizar la transición de animación hacia el objetivo
+    animAccumulatorMs += int(dt * 1000);
+    if (animAccumulatorMs >= animStepMs) {
+        if (currentFrame < desiredFrame) {
+            currentFrame++;
+        } else if (currentFrame > desiredFrame) {
+            currentFrame--;
+        }
+        animAccumulatorMs = 0;
+        updatePlayerSkin();
+    }
     update();
 }
 
@@ -63,27 +100,54 @@ void Level3Widget::checkCollisions() {
 
 void Level3Widget::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_Left) {
+    const int key = event->key();
+    if (key == Qt::Key_A || key == Qt::Key_Left) {
+        desiredFrame = -2;
         jugador.moverIzquierda();
-        if (jugador.getBounds().left() < width()/4)
-            jugador.rect.moveLeft(width()/4);
+        if (jugador.getBounds().left() < roadX)
+            jugador.rect.moveLeft(roadX);
     }
-    else if (event->key() == Qt::Key_Right) {
+    else if (key == Qt::Key_D || key == Qt::Key_Right) {
+        desiredFrame = 2;
         jugador.moverDerecha();
-        if (jugador.getBounds().right() > 3*(width()/4))
-            jugador.rect.moveRight(3*(width()/4) - jugador.rect.width());
+        const int rightBound = roadX + roadWidth;
+        if (jugador.getBounds().right() > rightBound)
+            jugador.rect.moveRight(rightBound - jugador.rect.width());
     }
 
+    update();
+}
+
+void Level3Widget::keyReleaseEvent(QKeyEvent *event)
+{
+    const int key = event->key();
+    if (key == Qt::Key_A || key == Qt::Key_Left || key == Qt::Key_D || key == Qt::Key_Right) {
+        desiredFrame = 0;
+    }
     update();
 }
 
 
 void Level3Widget::paintEvent(QPaintEvent *) {
     QPainter p(this);
-    p.fillRect(rect(), QColor(210,240,255));
-    // dibujar carretera
-    p.setBrush(QColor(50,50,50));
-    p.drawRect(width()/4, 0, width()/2, height());
+    // Dibujar fondo si está disponible, de lo contrario usar color plano
+    if (!background.isNull()) {
+        p.drawPixmap(rect(), background, background.rect());
+    } else {
+        p.fillRect(rect(), QColor(210,240,255));
+    }
+
+    // Asegurar jugador más abajo cuando el widget ya tiene tamaño válido
+    if (!playerPosInitialized) {
+        const int w = jugador.rect.width();
+        const int h = jugador.rect.height();
+        int marginBottom = 2; // ajusta este valor para colocarlo más abajo
+        int y = height() - marginBottom - h;
+        if (y < 0) y = 0;
+        if (y > height() - h) y = height() - h;
+        jugador.rect.moveTo(roadX + roadWidth/2 - w/2, y);
+        playerPosInitialized = true;
+    }
 
     // dibujar jugador (moto)
     jugador.draw(p);
@@ -97,4 +161,27 @@ void Level3Widget::paintEvent(QPaintEvent *) {
     // HUD
     p.setPen(Qt::white);
     p.drawText(10,20, QString("Vidas: %1").arg(jugador.vidas));
+}
+
+void Level3Widget::updatePlayerSkin() {
+    switch (currentFrame) {
+        case -2:
+            jugador.skin = media.jugador3_sprite_2;
+            break;
+        case -1:
+            jugador.skin = media.jugador3_sprite_1;
+            break;
+        case 0:
+            jugador.skin = media.jugador3_sprite0;
+            break;
+        case 1:
+            jugador.skin = media.jugador3_sprite1;
+            break;
+        case 2:
+            jugador.skin = media.jugador3_sprite2;
+            break;
+        default:
+            jugador.skin = media.jugador3_sprite0;
+            break;
+    }
 }

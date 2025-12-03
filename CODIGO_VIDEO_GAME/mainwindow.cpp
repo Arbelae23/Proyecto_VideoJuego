@@ -21,8 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     level2->setGeometry(0, 0, ui->pageLevel2->width(), ui->pageLevel2->height());
 
     level3->setParent(ui->pageLevel3);
-    level3->setGeometry(0, 0, ui->pageLevel3->width(), ui->pageLevel3->height());
-
+    //level3->setGeometry(0, 0, ui->pageLevel3->width(), ui->pageLevel3->height());
+    level3->setGeometry(10, 0, 1330, 700);
 
 
     // Conectar botones

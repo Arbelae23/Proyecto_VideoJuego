@@ -16,6 +16,9 @@ Level1Widget::Level1Widget(QWidget *parent)
     media.cargarMedia();
     // Cargar imagen de fondo usando la ruta definida en Media
     background.load(media.background_nivel);
+    // Configurar velocidad de desplazamiento del camino (px/seg)
+    media.setRoadSpeed(240);
+    media.setRoadDirectionDown(false); // mover hacia arriba
     // Asignar sprite del jugador desde Media (jugador 1)
     jugador.skin = media.jugador1_sprite;
     // Ajustar tamaño del jugador (hitbox) basado en el sprite y escalarlo más grande
@@ -111,9 +114,8 @@ void Level1Widget::paintEvent(QPaintEvent *) {
         jugador.rect.moveTop(height() - 140);
     }
 
-    // dibujar suelo
-    p.setBrush(QColor(200,200,200));
-    p.drawRect(0, height()-60, width(), 60);
+    // Dibujar camino desplazándose (entre background y jugador)
+    media.drawScrollingRoad(p, rect(), dt);
 
     // dibujar jugador
     jugador.draw(p);
