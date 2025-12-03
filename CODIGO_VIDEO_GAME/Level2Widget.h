@@ -3,39 +3,53 @@
 
 #include <QWidget>
 #include <QTimer>
+#include "Jugador_U_D_Diagonals.h"
 #include "Enemigos.h"
-#include "Jugador_R_L.h"
 #include "Interacciones.h"
-#include "Media.h"
-#include <vector>
 
-class Level2Widget : public QWidget {
+class Level2Widget : public QWidget
+{
     Q_OBJECT
+
 public:
     explicit Level2Widget(QWidget *parent = nullptr);
 
 protected:
-    void paintEvent(QPaintEvent *event) override;
+    void paintEvent(QPaintEvent *) override;
+    void keyPressEvent(QKeyEvent *ev) override;
+    void keyReleaseEvent(QKeyEvent *ev) override;
+    void resizeEvent(QResizeEvent *ev) override;
 
 private slots:
     void onTick();
 
 private:
+    // --- JUGADOR ---
+    Jugador_U_D_Diagonals jugador;
+
+    // --- ENEMIGOS ---
+    std::vector<Enemigos> enemigos;
+    void setupEnemies();
+    bool enemigosCreados = false;
+
+    // --- INTERACCIONES ---
+    Interacciones inter;
+
+    // --- TIMER ---
     QTimer timer;
     double dt;
     double t_global;
-    bool enemigosCreados = false;
 
-    Jugador_R_L jugador; // en este nivel jugador no se mueve verticalmente, solo lateral
-    Interacciones inter;
-    Media media;
+    // --- TECLAS ---
+    bool wPressed = false;
+    bool aPressed = false;
+    bool sPressed = false;
+    bool dPressed = false;
 
-    std::vector<Enemigos> enemigos; // un seno y un orbital (pueden entrar/salir)
-    void setupEnemies();
+    // --- METODOS ---
+    void moverJugadorWASD();
     void checkCollisions();
-
-protected:
-
 };
 
 #endif // LEVEL2WIDGET_H
+
