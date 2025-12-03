@@ -2,23 +2,26 @@
 #define JUGADOR_U_D_DIAGONALS_H
 
 #include "Jugador_R_L.h"
-#include <QPoint>
+#include <cmath>
 
 class Jugador_U_D_Diagonals : public Jugador_R_L {
 public:
     Jugador_U_D_Diagonals();
 
-    QPoint Pos_XY;
+    // Movimientos simples
+    void moverW();
+    void moverS();
+    void moverA();
+    void moverD();
 
-    // movimientos diagonales / WASD
-    void moverW(); // up
-    void moverS(); // down
-    void moverA(); // left
-    void moverD(); // right
-    void moverWD(); // up-right
-    void moverDS(); // down-right
-    void moverAS(); // up-left
-    void moverAW(); // down-left
+    // Diagonales (corregidas)
+    void moverWD();
+    void moverDS();
+    void moverAS();
+    void moverAW();
+
+    // Método recomendado (vector)
+    void moverPorVector(float vx, float vy);
 };
 
-#endif // JUGADOR_U_D_DIAGONALS_H
+#endif
