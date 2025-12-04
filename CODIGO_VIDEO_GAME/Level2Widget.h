@@ -15,6 +15,11 @@ class Level2Widget : public QWidget
 
 public:
     explicit Level2Widget(QWidget *parent = nullptr);
+    int currentFrame = 0;
+    int desiredFrame = 0;
+    int animStepMs = 80;
+    int animAccumulatorMs = 0;
+    void updatePlayerSkin();
 
 protected:
     void paintEvent(QPaintEvent *) override;

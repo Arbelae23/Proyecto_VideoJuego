@@ -15,7 +15,20 @@ public:
     QString background_nivel3;
     QString jugador1_sprite;
     // Imagen de carretera para scroll en Nivel 1
-    QString camino; 
+    QString camino;
+
+
+    // Sprites del jugador del Nivel 2
+    QString jugador2_sprite0;
+    QString jugador2_sprite1;
+    QString jugador2_sprite2;
+    QString jugador2_sprite3;
+    QString jugador2_sprite4;
+    QString jugador2_sprite5;
+    QString jugador2_sprite6;
+    QString jugador2_sprite7;
+
+
     // Sprites del jugador del Nivel 3 (moto vista trasera)
     QString jugador3_sprite_2; // representa -2
     QString jugador3_sprite_1; // representa -1
