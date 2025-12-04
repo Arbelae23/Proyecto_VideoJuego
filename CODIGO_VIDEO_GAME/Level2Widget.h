@@ -6,6 +6,8 @@
 #include "Jugador_U_D_Diagonals.h"
 #include "Enemigos.h"
 #include "Interacciones.h"
+#include "Media.h"
+
 
 class Level2Widget : public QWidget
 {
@@ -49,6 +51,8 @@ private:
     // --- METODOS ---
     void moverJugadorWASD();
     void checkCollisions();
+    Media media;
+    QPixmap background;
 };
 
 #endif // LEVEL2WIDGET_H

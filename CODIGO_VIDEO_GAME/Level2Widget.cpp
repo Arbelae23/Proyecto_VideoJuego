@@ -14,6 +14,7 @@ Level2Widget::Level2Widget(QWidget *parent)
     jugador.rect = QRect(200, 350, 50, 80);
     jugador.speed = 8;
     jugador.vidas = 3;
+    background.load(media.background_nivel2);
 
     // --- Interacciones ---
     inter.contador_vidas = 3;
@@ -132,23 +133,23 @@ void Level2Widget::checkCollisions()
     }
 }
 
-void Level2Widget::paintEvent(QPaintEvent *)
-{
+void Level2Widget::paintEvent(QPaintEvent *) {
     QPainter p(this);
+    // Dibujar fondo si está disponible, de lo contrario usar color plano
+    if (!background.isNull()) {
+        p.drawPixmap(rect(), background, background.rect());
+        //p.drawPixmap(QRect(0, 0, 1600, 900), background, background.rect());
+    } else {
+        p.fillRect(rect(), QColor(240,240,240));
+    }
 
-    p.fillRect(rect(), QColor(230, 235, 255));
+    // actualizar jugador dibujo (asegurar su Y en resize)
+    if (jugador.rect.top() == 100) { // posición por defecto; forzar a bottom on first draw
+        jugador.rect.moveTop(height() - 140);
+    }
 
-    // Piso
-    p.setBrush(QColor(180, 180, 180));
-    p.drawRect(0, height() - 60, width(), 60);
-
-    // Jugador
+    // dibujar jugador
     jugador.draw(p);
-
-    // Enemigos
-    for (auto &e : enemigos)
-        e.draw(p);
-
-    p.setPen(Qt::black);
-    p.drawText(10, 20, QString("Vidas: %1").arg(jugador.vidas));
 }
+
+
