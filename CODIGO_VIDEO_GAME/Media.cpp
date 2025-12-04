@@ -7,31 +7,31 @@ Media::Media() {
 }
 
 void Media::cargarMedia() {
-    // Aquí asignas rutas o inicializas QMediaPlayer si quieres
     cancion_nivel = "";
-    // Establecer fondo por defecto para el nivel actual (Nivel 1)
-    // Usar recurso embebido para evitar problemas de rutas relativas
-    background_nivel = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/Backgraund/fon1.jpg";
-    camino = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/Backgraund/camino.png";
 
-    background_nivel2 ="C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/Backgraund/fon2.png";
+    // Fondos
+    background_nivel  = ":/Backgraund/Backgraund/fon1.jpg";
+    camino            = ":/Backgraund/Backgraund/camino.png";
+    background_nivel2 = ":/Backgraund/Backgraund/fon2.png";
+    background_nivel3 = ":/Backgraund/Backgraund/fon3.png";
 
-    background_nivel3 ="C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/Backgraund/fon3.png";
+    // Sprites del jugador
+    jugador1_sprite = ":/sprite/sprite/Car1.png";
 
-    jugador1_sprite = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/Car1.png";
+    jugador3_sprite_2 = ":/sprite/-2m.png";
+    jugador3_sprite_1 = ":/sprite/-1m.png";
+    jugador3_sprite0  = ":/sprite/0m.png";
+    jugador3_sprite1  = ":/sprite/1m.png";
+    jugador3_sprite2  = ":/sprite/2m.png";
 
-    jugador3_sprite_2 = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/-2m.png";
-    jugador3_sprite_1 = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/-1m.png";
-    jugador3_sprite0 = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/0m.png";
-    jugador3_sprite1 = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/1m.png";
-    jugador3_sprite2 = "C:/Users/USER/Documents/GitHub/Proyecto_VideoJuego/CODIGO_VIDEO_GAME/sprite/2m.png";
-
+    // Sonidos (cuando los tengas)
     sonido_arresto = "";
-    sonido_choque = "";
-    sonido_trofeo = "";
-    sonido_win = "";
-    sonido_loss = "";
+    sonido_choque  = "";
+    sonido_trofeo  = "";
+    sonido_win     = "";
+    sonido_loss    = "";
 }
+
 
 void Media::reproducir_cancionNivel(int nivel) {
     Q_UNUSED(nivel);
