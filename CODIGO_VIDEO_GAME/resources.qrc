@@ -1,10 +1,37 @@
 <RCC>
-  <qresource prefix="/Backgraund">
-    <file>Backgraund/fon1.jpg</file>
-    <file>Backgraund/fon2.png</file>
-    <file>Backgraund/fon3.png</file>
-  </qresource>
-  <qresource prefix="/sprite">
-    <file>sprite/Car1.png</file>
-  </qresource>
+    <qresource prefix="/Backgraund">
+        <file>Backgraund/fon1.jpg</file>
+        <file>Backgraund/fon2.png</file>
+        <file>Backgraund/fon3.png</file>
+        <file>Backgraund/camino.png</file>
+    </qresource>
+    <qresource prefix="/sprite">
+        <file>sprite/Car1.png</file>
+        <file>sprite/rodador.png</file>
+        <file>sprite/0m.png</file>
+        <file>sprite/1m.png</file>
+        <file>sprite/-1m.png</file>
+        <file>sprite/2m.png</file>
+        <file>sprite/-2m.png</file>
+        <file>sprite/Barril.png</file>
+        <file>sprite/C_A.png</file>
+        <file>sprite/C_D.png</file>
+        <file>sprite/C_S.png</file>
+        <file>sprite/C_SA.png</file>
+        <file>sprite/C_SD.png</file>
+        <file>sprite/C_W.png</file>
+        <file>sprite/C_WA.png</file>
+        <file>sprite/C_WD.png</file>
+        <file>sprite/lvel3_Carro1.png</file>
+        <file>sprite/lvel3_Carro2.png</file>
+        <file>sprite/lvel3_Carro3.png</file>
+        <file>sprite/Poli_A.png</file>
+        <file>sprite/Poli_D.png</file>
+        <file>sprite/Poli_S.png</file>
+        <file>sprite/Poli_SA.png</file>
+        <file>sprite/Poli_SD.png</file>
+        <file>sprite/Poli_W.png</file>
+        <file>sprite/Poli_WA.png</file>
+        <file>sprite/Poli_WD.png</file>
+    </qresource>
 </RCC>

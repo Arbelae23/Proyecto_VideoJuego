@@ -14,12 +14,20 @@ void Jugador_R_L::moverIzquierda() {
 
 void Jugador_R_L::draw(QPainter &p) {
     if (!skin.isEmpty()) {
-        // Aquí dibujarías un QPixmap si lo deseas
+        QPixmap sprite;
+        if (sprite.load(skin)) {
+            p.drawPixmap(rect, sprite);
+        } else {
+            // Si falla la imagen, dibuja caja roja
+            p.setBrush(Qt::red);
+            p.drawRect(rect);
+        }
     } else {
         p.setBrush(Qt::blue);
         p.drawRect(rect);
     }
 }
+
 
 void Jugador_R_L::quitarVida(int d) {
     vidas -= d;

@@ -18,11 +18,11 @@ void Media::cargarMedia() {
     // Sprites del jugador
     jugador1_sprite = ":/sprite/sprite/Car1.png";
 
-    jugador3_sprite_2 = ":/sprite/-2m.png";
-    jugador3_sprite_1 = ":/sprite/-1m.png";
-    jugador3_sprite0  = ":/sprite/0m.png";
-    jugador3_sprite1  = ":/sprite/1m.png";
-    jugador3_sprite2  = ":/sprite/2m.png";
+    jugador3_sprite_2 = ":/sprite/sprite/-2m.png";
+    jugador3_sprite_1 = ":/sprite/sprite/-1m.png";
+    jugador3_sprite0  = ":/sprite/sprite/0m.png";
+    jugador3_sprite1  = ":/sprite/sprite/1m.png";
+    jugador3_sprite2  = ":/sprite/sprite/2m.png";
 
     // Sonidos (cuando los tengas)
     sonido_arresto = "";
