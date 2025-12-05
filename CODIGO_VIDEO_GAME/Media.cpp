@@ -18,11 +18,32 @@ void Media::cargarMedia() {
     // Sprites del jugador
     jugador1_sprite = ":/sprite/sprite/Car1.png";
 
+    jugador2_sprite0 =":/sprite/sprite/C_W.png";
+    jugador2_sprite1 =":/sprite/sprite/C_WD.png";
+    jugador2_sprite2 =":/sprite/sprite/C_D.png";
+    jugador2_sprite3 =":/sprite/sprite/C_SD.png";
+    jugador2_sprite4 =":/sprite/sprite/C_S.png";
+    jugador2_sprite5 =":/sprite/sprite/C_SA.png";
+    jugador2_sprite6 =":/sprite/sprite/C_A.png";
+    jugador2_sprite7 =":/sprite/sprite/C_WA.png";
+
+
     jugador3_sprite_2 = ":/sprite/sprite/-2m.png";
     jugador3_sprite_1 = ":/sprite/sprite/-1m.png";
     jugador3_sprite0  = ":/sprite/sprite/0m.png";
     jugador3_sprite1  = ":/sprite/sprite/1m.png";
     jugador3_sprite2  = ":/sprite/sprite/2m.png";
+
+    //Sprites enemigos nivel 2
+
+    policia_sprite = ":/sprite/sprite/Poli_W.png";
+    bicicleta_sprite = ":/sprite/sprite/Bici.png";
+
+    //Sprites choque
+
+    Choque = ":/sprite/sprite/Choque.png";
+    Gameover = ":/Backgraund/Backgraund/gameover.gif";
+
 
     // Sonidos (cuando los tengas)
     sonido_arresto = "";

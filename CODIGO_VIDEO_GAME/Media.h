@@ -9,13 +9,27 @@ class Media {
 public:
     Media();
 
+    QString Gameover;
     QString cancion_nivel;
     QString background_nivel;
     QString background_nivel2;
     QString background_nivel3;
     QString jugador1_sprite;
     // Imagen de carretera para scroll en Nivel 1
-    QString camino; 
+    QString camino;
+
+
+    // Sprites del jugador del Nivel 2
+    QString jugador2_sprite0;
+    QString jugador2_sprite1;
+    QString jugador2_sprite2;
+    QString jugador2_sprite3;
+    QString jugador2_sprite4;
+    QString jugador2_sprite5;
+    QString jugador2_sprite6;
+    QString jugador2_sprite7;
+
+
     // Sprites del jugador del Nivel 3 (moto vista trasera)
     QString jugador3_sprite_2; // representa -2
     QString jugador3_sprite_1; // representa -1
@@ -27,6 +41,15 @@ public:
     QString sonido_trofeo;
     QString sonido_win;
     QString sonido_loss;
+
+    //Sprites enemigo policia nivel 2
+    QString policia_sprite;
+
+    //Sprites enemigo bicicleta nivel 2
+    QString bicicleta_sprite;
+
+    // choque enemigos
+    QString Choque;
 
     void cargarMedia();
     void reproducir_cancionNivel(int nivel);

@@ -4,6 +4,7 @@
         <file>Backgraund/fon2.png</file>
         <file>Backgraund/fon3.png</file>
         <file>Backgraund/camino.png</file>
+        <file>Backgraund/gameover.gif</file>
     </qresource>
     <qresource prefix="/sprite">
         <file>sprite/Car1.png</file>
@@ -33,5 +34,7 @@
         <file>sprite/Poli_W.png</file>
         <file>sprite/Poli_WA.png</file>
         <file>sprite/Poli_WD.png</file>
+        <file>sprite/Bici.png</file>
+        <file>sprite/Choque.png</file>
     </qresource>
 </RCC>

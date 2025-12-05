@@ -6,6 +6,7 @@
 #include <QRect>
 #include <QPainter>
 #include <QString>
+#include <QPixmap>
 
 class Enemigos {
 public:
@@ -14,7 +15,8 @@ public:
     enum TipoMovimiento {
         TM_Linear,
         TM_SenoDown,
-        TM_Espiral
+        TM_Espiral,
+        TM_EspiralHorizontal
     };
 
     // Variables básicas
@@ -28,6 +30,13 @@ public:
     QRect bounds;
     TipoMovimiento tipo_movimiento = TM_Linear;
 
+
+    // colisiones
+    bool enChoque = false;
+    double tiempoChoque = 0.0;
+    void activarChoque();
+    void desactivarChoque();
+
     // Movimiento sinusoidal
     double tiempo_sen = 0.0;
     double amplitud_seno = 50.0;
@@ -38,6 +47,15 @@ public:
     double velAngular = 2.0;
     double radio_actual = 20.0;
     double expansion = 20.0;
+
+    //Sprite enemigos
+    QPointF pos_inicial;
+    bool usaSprite = false;
+    QPixmap sprite;
+    QPixmap spriteNormal;
+    QPixmap spriteChoque;
+
+
 
     // Funciones
     void update(double dt, int width, int height);

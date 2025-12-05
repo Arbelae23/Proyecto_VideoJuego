@@ -33,3 +33,8 @@ void Jugador_R_L::quitarVida(int d) {
     vidas -= d;
     if (vidas < 0) vidas = 0;
 }
+
+void Jugador_R_L::moverPorVector(float dx, float dy)
+{
+    rect.translate(int(dx), int(dy));
+}

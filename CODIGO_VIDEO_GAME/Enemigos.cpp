@@ -11,6 +11,23 @@ Enemigos::Enemigos() {
 }
 
 void Enemigos::update(double dt, int width, int height) {
+
+
+    if (enChoque)
+    {
+        tiempoChoque += dt;
+
+        if (tiempoChoque >= 0.4)
+        {
+            sprite = spriteNormal;
+            pos_base = pos_inicial;
+            pos_f = pos_inicial;
+            bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
+            enChoque = false;
+        }
+        return;
+    }
+
     if (!activo) return;
 
     // ---- Mover la base con velocidad ----
@@ -41,14 +58,51 @@ void Enemigos::update(double dt, int width, int height) {
         pos_f.setX(pos_base.x() + qCos(angulo) * radio_actual);
         pos_f.setY(pos_base.y() + qSin(angulo) * radio_actual);
         break;
+
+    case TM_EspiralHorizontal:
+        tiempo_sen += dt;
+        angulo += velAngular * dt;
+
+        pos_f.setX(pos_base.x() + velocidad.x() * dt);
+        pos_f.setY(pos_base.y() + qSin(angulo) * radio_actual);
+
+        break;
     }
 
     // actualizar bounds
     bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
 }
 
-void Enemigos::draw(QPainter &p) {
+void Enemigos::draw(QPainter &p)
+{
     if (!activo) return;
-    p.setBrush(Qt::red);
-    p.drawEllipse(bounds);
+
+    if (usaSprite && !sprite.isNull()) {
+        //  DIBUJAR SPRITE ESCALADO AL TAMAÑO DEL ENEMIGO
+        p.drawPixmap(bounds, sprite);
+    } else {
+        // fallback: círculo rojo
+        p.setBrush(Qt::red);
+        p.drawEllipse(bounds);
+    }
+}
+
+
+
+void Enemigos::activarChoque()
+{
+    if (!enChoque && !spriteChoque.isNull())
+    {
+        sprite = spriteChoque;
+        enChoque = true;
+        tiempoChoque = 0.0;
+        velocidad = QPointF(0,0); // se detiene al chocar
+    }
+}
+
+void Enemigos::desactivarChoque()
+{
+    sprite = spriteNormal;
+    activo = false;   // ahora sí se elimina
+    enChoque = false;
 }
