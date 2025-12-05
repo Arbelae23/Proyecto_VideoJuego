@@ -15,6 +15,7 @@ class Level2Widget : public QWidget
     Q_OBJECT
 public:
     explicit Level2Widget(QWidget *parent = nullptr);
+    void reiniciarNivel2();
 
 protected:
     void paintEvent(QPaintEvent *ev) override;
@@ -63,10 +64,22 @@ private:
     // GAMEOVER
 
     bool mostrarGameOver = false;
+    bool esperandoDecision = false;
     QPixmap gameOverImg;
+
+    bool esperandoRespuesta = false;
 
 private slots:
     void onTick();
+
+
+
+
+
+signals:
+    void volverAlMenu();
+
+
 };
 
 #endif // LEVEL2WIDGET_H

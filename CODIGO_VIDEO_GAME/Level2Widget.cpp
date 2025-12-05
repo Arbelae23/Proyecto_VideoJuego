@@ -8,6 +8,10 @@
 Level2Widget::Level2Widget(QWidget *parent)
     : QWidget(parent), dt(0.016), t_global(0)
 {
+    mostrarGameOver = false;
+    esperandoDecision = false;
+    enemigosCreados = false;
+
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
     gameOverImg.load(media.Gameover);
@@ -156,6 +160,25 @@ void Level2Widget::setupEnemies()
 
 void Level2Widget::keyPressEvent(QKeyEvent *ev)
 {
+    // 🔥 SI ESTÁ ESPERANDO DECISIÓN (GAME OVER)
+    if (esperandoDecision)
+    {
+        if (ev->key() == Qt::Key_C)   // ✅ CONTINUAR
+        {
+            reiniciarNivel2();
+            return;
+        }
+        else if (ev->key() == Qt::Key_N)
+        {
+            emit volverAlMenu();   // vuelve al menú
+
+            return;
+        }
+
+        return; // ⛔ BLOQUEA CUALQUIER OTRO INPUT
+    }
+
+    // 🔥 BLOQUEAR TECLAS REPETIDAS
     if (ev->isAutoRepeat()) return;
 
     switch (ev->key())
@@ -179,6 +202,7 @@ void Level2Widget::keyPressEvent(QKeyEvent *ev)
         dPressed = true;
         desiredFrame = 2;   // DERECHA
         break;
+
     default:
         QWidget::keyPressEvent(ev);
         break;
@@ -286,28 +310,45 @@ void Level2Widget::onTick()
 
 void Level2Widget::checkCollisions()
 {
+    // ❌ Si ya hay Game Over, no revisar más colisiones
+    if (mostrarGameOver)
+        return;
+
     for (auto &e : enemigos)
     {
-        // ✅ No chocar si está inactivo o ya está en choque
         if (!e.activo || e.enChoque)
             continue;
 
         if (jugador.getBounds().intersects(e.bounds))
         {
-            // 🔴 BAJAR VIDA
             inter.quitar_vida(1);
             jugador.vidas = inter.contador_vidas;
 
-            // 🔥 ACTIVAR ESTADO DE CHOQUE
+            // ✅ Activar choque
             e.enChoque = true;
             e.tiempoChoque = 0.0;
 
-            // 🔥 CAMBIAR SPRITE
             if (!e.spriteChoque.isNull())
                 e.sprite = e.spriteChoque;
+
+            // 🔥 GAME OVER
+            if (jugador.vidas <= 0)
+            {
+                mostrarGameOver = true;
+                esperandoDecision = true;
+
+                // detener enemigos
+                for (auto &en : enemigos)
+                    en.activo = false;
+
+                timer.stop();   // ✅ detener el juego
+                return;         // ✅ salir inmediatamente
+            }
         }
     }
 }
+
+
 
 
 
@@ -327,13 +368,19 @@ void Level2Widget::paintEvent(QPaintEvent *)
     {
         if (!gameOverImg.isNull())
             p.drawPixmap(rect(), gameOverImg, gameOverImg.rect());
-        else {
-            p.setPen(Qt::red);
-            p.setFont(QFont("Arial", 40, QFont::Bold));
-            p.drawText(rect(), Qt::AlignCenter, "GAME OVER");
-        }
-        return;   // ⛔ no dibuja nada más
+
+        // 🔥 TEXTO ABAJO
+        p.setPen(Qt::white);
+        p.setFont(QFont("Arial", 18, QFont::Bold));
+
+        QString texto = "¿Deseas continuar?  (C) Continuar   (N) Volver al menu";
+        p.drawText(0, height() - 250, width(), 30,
+                   Qt::AlignCenter, texto);
+
+        return;
     }
+
+
 
     // AJUSTE DE POSICIÓN DEL JUGADOR
     if (jugador.rect.top() == 100) {
@@ -369,4 +416,25 @@ void Level2Widget::updatePlayerSkin()
     case 7: jugador.skin = media.jugador2_sprite7; break; // WA
     default: jugador.skin = media.jugador2_sprite0; break;
     }
+}
+
+
+
+void Level2Widget::reiniciarNivel2()
+{
+    mostrarGameOver = false;
+    esperandoDecision = false;
+
+    inter.contador_vidas = 3;
+    jugador.vidas = 3;
+
+    jugador.rect.moveTo(200, 350);
+
+    enemigos.clear();
+    enemigosCreados = false;
+    setupEnemies();
+
+    timer.start(int(dt * 1000));   // ✅ MUY IMPORTANTE
+
+    update();
 }
