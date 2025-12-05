@@ -10,6 +10,7 @@ Level2Widget::Level2Widget(QWidget *parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
+    gameOverImg.load(media.Gameover);
 
     // cargar media primero (IMPORTANTE)
     media.cargarMedia();
@@ -86,11 +87,17 @@ void Level2Widget::setupEnemies()
 
         // ✅ SPRITE
         if (!media.policia_sprite.isEmpty()) {
-            e.sprite.load(media.policia_sprite);
-            if (!e.sprite.isNull())
-                e.usaSprite = true;
+            e.spriteNormal.load(media.policia_sprite);
+            e.sprite = e.spriteNormal;
+            e.usaSprite = true;
         }
 
+        if (!media.Choque.isEmpty()) {
+            e.spriteChoque.load(media.Choque);
+        }
+
+
+        e.pos_inicial = e.pos_base;
         e.pos_f = e.pos_base;
         enemigos.push_back(e);
     }
@@ -129,14 +136,18 @@ void Level2Widget::setupEnemies()
             e.tamaño.height()
             );
 
-        // ✅ Sprite del policía (bicicleta)
+        // ✅ Sprite de la bicicleta
         if (!media.bicicleta_sprite.isEmpty()) {
-            e.sprite.load(media.bicicleta_sprite);
-            if (!e.sprite.isNull()) {
-                e.usaSprite = true;
-            }
+            e.spriteNormal.load(media.bicicleta_sprite);
+            e.sprite = e.spriteNormal;
+            e.usaSprite = true;
         }
 
+        if (!media.Choque.isEmpty()) {
+            e.spriteChoque.load(media.Choque);
+        }
+
+        e.pos_inicial = e.pos_base;
         e.pos_f = e.pos_base;
         enemigos.push_back(e);
     }
@@ -237,14 +248,12 @@ void Level2Widget::onTick()
 
         int diff = desiredFrame - currentFrame;
 
-        // envolver en ciclo circular [-4, +4]
         if (diff >  totalFrames / 2) diff -= totalFrames;
         if (diff < -totalFrames / 2) diff += totalFrames;
 
         if (diff > 0)      currentFrame++;
         else if (diff < 0) currentFrame--;
 
-        // normalizar entre 0 y 7
         if (currentFrame < 0) currentFrame += totalFrames;
         if (currentFrame >= totalFrames) currentFrame -= totalFrames;
 
@@ -252,29 +261,55 @@ void Level2Widget::onTick()
         animAccumulatorMs = 0;
     }
 
-    // Actualizar enemigos
+    // ✅ ACTUALIZAR ENEMIGOS
     for (auto &e : enemigos)
         e.update(dt, width(), height());
 
+    // ✅ DETECTAR COLISIONES
     checkCollisions();
-    update();
+
+    // 🔥 AQUÍ VA EL GAME OVER (ESTE ERA EL BLOQUE QUE NO SABÍAS DÓNDE IBA)
+    if (jugador.vidas <= 0 && !mostrarGameOver)
+    {
+        mostrarGameOver = true;
+
+        // Detener enemigos
+        for (auto &e : enemigos)
+            e.activo = false;
+
+        return; // ⛔ detiene el juego aquí
+    }
+
+    update(); // ✅ REDIBUJAR
 }
+
 
 void Level2Widget::checkCollisions()
 {
     for (auto &e : enemigos)
     {
-        if (!e.activo) continue;
+        // ✅ No chocar si está inactivo o ya está en choque
+        if (!e.activo || e.enChoque)
+            continue;
 
         if (jugador.getBounds().intersects(e.bounds))
         {
+            // 🔴 BAJAR VIDA
             inter.quitar_vida(1);
-
             jugador.vidas = inter.contador_vidas;
-            e.activo = false;
+
+            // 🔥 ACTIVAR ESTADO DE CHOQUE
+            e.enChoque = true;
+            e.tiempoChoque = 0.0;
+
+            // 🔥 CAMBIAR SPRITE
+            if (!e.spriteChoque.isNull())
+                e.sprite = e.spriteChoque;
         }
     }
 }
+
+
 
 void Level2Widget::paintEvent(QPaintEvent *)
 {
@@ -285,6 +320,19 @@ void Level2Widget::paintEvent(QPaintEvent *)
         p.drawPixmap(rect(), background, background.rect());
     } else {
         p.fillRect(rect(), QColor(240,240,240));
+    }
+
+    // 🔥 SI HAY GAME OVER, SOLO DIBUJAR ESO
+    if (mostrarGameOver)
+    {
+        if (!gameOverImg.isNull())
+            p.drawPixmap(rect(), gameOverImg, gameOverImg.rect());
+        else {
+            p.setPen(Qt::red);
+            p.setFont(QFont("Arial", 40, QFont::Bold));
+            p.drawText(rect(), Qt::AlignCenter, "GAME OVER");
+        }
+        return;   // ⛔ no dibuja nada más
     }
 
     // AJUSTE DE POSICIÓN DEL JUGADOR
@@ -304,6 +352,8 @@ void Level2Widget::paintEvent(QPaintEvent *)
     p.setPen(Qt::black);
     p.drawText(10,20, QString("Vidas: %1").arg(jugador.vidas));
 }
+
+
 
 void Level2Widget::updatePlayerSkin()
 {

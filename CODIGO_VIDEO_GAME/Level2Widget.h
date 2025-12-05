@@ -59,6 +59,12 @@ private:
     void updatePlayerSkin();
     void checkCollisions();
 
+
+    // GAMEOVER
+
+    bool mostrarGameOver = false;
+    QPixmap gameOverImg;
+
 private slots:
     void onTick();
 };

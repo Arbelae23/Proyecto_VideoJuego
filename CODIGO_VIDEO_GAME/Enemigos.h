@@ -30,6 +30,13 @@ public:
     QRect bounds;
     TipoMovimiento tipo_movimiento = TM_Linear;
 
+
+    // colisiones
+    bool enChoque = false;
+    double tiempoChoque = 0.0;
+    void activarChoque();
+    void desactivarChoque();
+
     // Movimiento sinusoidal
     double tiempo_sen = 0.0;
     double amplitud_seno = 50.0;
@@ -42,8 +49,13 @@ public:
     double expansion = 20.0;
 
     //Sprite enemigos
+    QPointF pos_inicial;
     bool usaSprite = false;
     QPixmap sprite;
+    QPixmap spriteNormal;
+    QPixmap spriteChoque;
+
+
 
     // Funciones
     void update(double dt, int width, int height);

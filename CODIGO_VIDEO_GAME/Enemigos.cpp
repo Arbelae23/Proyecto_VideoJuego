@@ -11,6 +11,23 @@ Enemigos::Enemigos() {
 }
 
 void Enemigos::update(double dt, int width, int height) {
+
+
+    if (enChoque)
+    {
+        tiempoChoque += dt;
+
+        if (tiempoChoque >= 0.4)
+        {
+            sprite = spriteNormal;
+            pos_base = pos_inicial;
+            pos_f = pos_inicial;
+            bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
+            enChoque = false;
+        }
+        return;
+    }
+
     if (!activo) return;
 
     // ---- Mover la base con velocidad ----
@@ -68,4 +85,24 @@ void Enemigos::draw(QPainter &p)
         p.setBrush(Qt::red);
         p.drawEllipse(bounds);
     }
+}
+
+
+
+void Enemigos::activarChoque()
+{
+    if (!enChoque && !spriteChoque.isNull())
+    {
+        sprite = spriteChoque;
+        enChoque = true;
+        tiempoChoque = 0.0;
+        velocidad = QPointF(0,0); // se detiene al chocar
+    }
+}
+
+void Enemigos::desactivarChoque()
+{
+    sprite = spriteNormal;
+    activo = false;   // ahora sí se elimina
+    enChoque = false;
 }

@@ -9,6 +9,7 @@ class Media {
 public:
     Media();
 
+    QString Gameover;
     QString cancion_nivel;
     QString background_nivel;
     QString background_nivel2;
@@ -46,6 +47,9 @@ public:
 
     //Sprites enemigo bicicleta nivel 2
     QString bicicleta_sprite;
+
+    // choque enemigos
+    QString Choque;
 
     void cargarMedia();
     void reproducir_cancionNivel(int nivel);

@@ -39,7 +39,10 @@ void Media::cargarMedia() {
     policia_sprite = ":/sprite/sprite/Poli_W.png";
     bicicleta_sprite = ":/sprite/sprite/Bici.png";
 
+    //Sprites choque
 
+    Choque = ":/sprite/sprite/Choque.png";
+    Gameover = ":/Backgraund/Backgraund/gameover.gif";
 
 
     // Sonidos (cuando los tengas)
