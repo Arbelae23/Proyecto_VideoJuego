@@ -34,6 +34,14 @@ void Media::cargarMedia() {
     jugador3_sprite1  = ":/sprite/sprite/1m.png";
     jugador3_sprite2  = ":/sprite/sprite/2m.png";
 
+    //Sprites enemigos nivel 2
+
+    policia_sprite = ":/sprite/sprite/Poli_W.png";
+    bicicleta_sprite = ":/sprite/sprite/Bici.png";
+
+
+
+
     // Sonidos (cuando los tengas)
     sonido_arresto = "";
     sonido_choque  = "";

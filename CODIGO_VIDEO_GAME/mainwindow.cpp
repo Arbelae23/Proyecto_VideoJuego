@@ -7,6 +7,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    const int W = 1330;
+    const int H = 700;
+
     // Crear niveles
     level1 = new Level1Widget();
     level2 = new Level2Widget();
@@ -14,16 +17,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Insertar cada nivel en su página correcta
     level1->setParent(ui->pageLevel1);
-    //level1->setGeometry(0, 0, ui->pageLevel1->width(), ui->pageLevel1->height());
-    level1->setGeometry(10, 0, 1330, 700);
+    level1->setGeometry(10, 0, W, H);
 
     level2->setParent(ui->pageLevel2);
-    level2->setGeometry(0, 0, ui->pageLevel2->width(), ui->pageLevel2->height());
+    level2->setGeometry(10, 0, W, H);   // ✅ AHORA IGUAL QUE LOS OTROS
 
     level3->setParent(ui->pageLevel3);
-    //level3->setGeometry(0, 0, ui->pageLevel3->width(), ui->pageLevel3->height());
-    level3->setGeometry(10, 0, 1330, 700);
-
+    level3->setGeometry(10, 0, W, H);
 
     // Conectar botones
     connect(ui->btnLevel1, &QPushButton::clicked, this, &MainWindow::openLevel1);
@@ -54,4 +54,3 @@ void MainWindow::openLevel3() {
 void MainWindow::returnToMenu() {
     ui->stackedWidget->setCurrentIndex(0);
 }
-

@@ -41,6 +41,12 @@ public:
     QString sonido_win;
     QString sonido_loss;
 
+    //Sprites enemigo policia nivel 2
+    QString policia_sprite;
+
+    //Sprites enemigo bicicleta nivel 2
+    QString bicicleta_sprite;
+
     void cargarMedia();
     void reproducir_cancionNivel(int nivel);
     void reproducir_background();

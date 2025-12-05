@@ -33,5 +33,6 @@
         <file>sprite/Poli_W.png</file>
         <file>sprite/Poli_WA.png</file>
         <file>sprite/Poli_WD.png</file>
+        <file>sprite/Bici.png</file>
     </qresource>
 </RCC>

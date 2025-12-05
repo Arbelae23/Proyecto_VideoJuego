@@ -19,6 +19,7 @@ public:
     void moverIzquierda();
     void draw(QPainter &p);
     void quitarVida(int d);
+    void moverPorVector(float dx, float dy);
 
     QRect getBounds() const { return rect; }
 };

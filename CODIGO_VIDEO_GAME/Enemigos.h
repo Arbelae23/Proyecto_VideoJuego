@@ -6,6 +6,7 @@
 #include <QRect>
 #include <QPainter>
 #include <QString>
+#include <QPixmap>
 
 class Enemigos {
 public:
@@ -14,7 +15,8 @@ public:
     enum TipoMovimiento {
         TM_Linear,
         TM_SenoDown,
-        TM_Espiral
+        TM_Espiral,
+        TM_EspiralHorizontal
     };
 
     // Variables básicas
@@ -38,6 +40,10 @@ public:
     double velAngular = 2.0;
     double radio_actual = 20.0;
     double expansion = 20.0;
+
+    //Sprite enemigos
+    bool usaSprite = false;
+    QPixmap sprite;
 
     // Funciones
     void update(double dt, int width, int height);

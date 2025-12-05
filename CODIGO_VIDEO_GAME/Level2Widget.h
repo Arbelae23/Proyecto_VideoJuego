@@ -3,62 +3,64 @@
 
 #include <QWidget>
 #include <QTimer>
-#include "Jugador_U_D_Diagonals.h"
+#include <QPixmap>
+#include <vector>
 #include "Enemigos.h"
+#include "Jugador_R_L.h"
 #include "Interacciones.h"
-#include "Media.h"
-
+#include "Media.h" // asumo que tienes esta clase
 
 class Level2Widget : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit Level2Widget(QWidget *parent = nullptr);
-    int currentFrame = 0;
-    int desiredFrame = 0;
-    int animStepMs = 80;
-    int animAccumulatorMs = 0;
-    void updatePlayerSkin();
 
 protected:
-    void paintEvent(QPaintEvent *) override;
+    void paintEvent(QPaintEvent *ev) override;
+    void resizeEvent(QResizeEvent *ev) override;
     void keyPressEvent(QKeyEvent *ev) override;
     void keyReleaseEvent(QKeyEvent *ev) override;
-    void resizeEvent(QResizeEvent *ev) override;
-
-private slots:
-    void onTick();
 
 private:
-    // --- JUGADOR ---
-    Jugador_U_D_Diagonals jugador;
-
-    // --- ENEMIGOS ---
-    std::vector<Enemigos> enemigos;
-    void setupEnemies();
-    bool enemigosCreados = false;
-
-    // --- INTERACCIONES ---
-    Interacciones inter;
-
-    // --- TIMER ---
+    // miembros
     QTimer timer;
     double dt;
     double t_global;
 
-    // --- TECLAS ---
+    // Jugador / media / interacciones
+    Jugador_R_L jugador;
+    Media media;
+    Interacciones inter;
+
+    // background
+    QPixmap background;
+
+    // enemigos
+    std::vector<Enemigos> enemigos;
+    bool enemigosCreados = false;
+
+    // controles
     bool wPressed = false;
     bool aPressed = false;
     bool sPressed = false;
     bool dPressed = false;
 
-    // --- METODOS ---
+    // animación sprites jugador
+    int currentFrame = 0;
+    int desiredFrame = 0;
+    int animAccumulatorMs = 0;
+    int animStepMs = 80; // ms entre pasos
+    const double animStepSeconds = 0.08;
+
+    // funciones
+    void setupEnemies();
     void moverJugadorWASD();
+    void updatePlayerSkin();
     void checkCollisions();
-    Media media;
-    QPixmap background;
+
+private slots:
+    void onTick();
 };
 
 #endif // LEVEL2WIDGET_H
-
