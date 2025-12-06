@@ -17,7 +17,7 @@ void Enemigos::update(double dt, int width, int height) {
     {
         tiempoChoque += dt;
 
-        // mantenerlo quieto solo durante la animación de choque.
+        // hay que tratar de mantenerlo quieto solo durante la animación de choque
         pos_f += QPointF(0, 0);
 
         if (tiempoChoque >= 0.4)
