@@ -58,7 +58,17 @@ public:
     bool usaSprite = false;
     QPixmap sprite;
     QPixmap spriteNormal;
+    // Variantes de dirección/orientación usadas por movimientos y rebotes
+    QPixmap spriteNormalIzquierda;
+    QPixmap spriteNormalArriba;
+    QPixmap spriteNormalAbajo;
+    // Alias opcional para "derecha"; si no se asigna, usar spriteNormal
+    QPixmap spriteNormalDerecha;
     QPixmap spriteChoque;
+
+    // Estado de mirada/dirección horizontal y vertical
+    bool mirandoDerecha = true;
+    bool mirandoArriba = true;
 
     // Rotación opcional del sprite (para "rodador")
     bool rotateSprite = false;

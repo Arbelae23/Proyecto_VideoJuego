@@ -89,7 +89,7 @@ void Enemigos::update(double dt, int width, int height) {
         pos_base.setX(0);
         velocidad.setX(fabs(velocidad.x()));
 
-        // ✅ MIRAR A LA DERECHA
+        // MIRAR A LA DERECHA
         mirandoDerecha = true;
 
         if (!spriteNormal.isNull())
@@ -139,13 +139,13 @@ void Enemigos::update(double dt, int width, int height) {
         QPointF dir = jugadorPos - pos_f;
         double distancia = std::sqrt(dir.x()*dir.x() + dir.y()*dir.y());
 
-        // 👁️ DETECTAR JUGADOR
+        // DETECTAR JUGADOR
         if (distancia < radioVision)
             persiguiendo = true;
         else if (distancia > radioPerdida)
             persiguiendo = false;
 
-        // 🧠 MOVIMIENTO
+        // MOVIMIENTO
         if (persiguiendo)
         {
             dir /= distancia; // normalizar
@@ -262,8 +262,13 @@ void Enemigos::activarChoque()
 
 void Enemigos::desactivarChoque()
 {
-    // 🔥 Volver al sprite correcto según dirección
-    sprite = mirandoDerecha ? spriteNormalDerecha : spriteNormalIzquierda;
+    // Volver al sprite correcto según dirección
+    if (mirandoDerecha) {
+        // Fallback a spriteNormal si no hay variante explícita de derecha
+        sprite = spriteNormalDerecha.isNull() ? spriteNormal : spriteNormalDerecha;
+    } else {
+        sprite = spriteNormalIzquierda;
+    }
 
     activo = false;   // ahora sí se elimina
     enChoque = false;
