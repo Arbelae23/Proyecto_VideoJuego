@@ -22,6 +22,8 @@ public:
     void moverPorVector(float dx, float dy);
 
     QRect getBounds() const { return rect; }
+    // Hitbox reducido para colisiones (no afecta el dibujo)
+    QRect getHitbox() const;
 };
 
 #endif

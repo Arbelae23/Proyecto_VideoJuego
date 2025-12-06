@@ -1,4 +1,5 @@
 #include "Jugador_R_L.h"
+#include <algorithm>
 
 Jugador_R_L::Jugador_R_L()
     : vidas(3), rect(100, 100, 50, 80), skin(""), carril(0), speed(8)
@@ -37,4 +38,23 @@ void Jugador_R_L::quitarVida(int d) {
 void Jugador_R_L::moverPorVector(float dx, float dy)
 {
     rect.translate(int(dx), int(dy));
+}
+
+QRect Jugador_R_L::getHitbox() const
+{
+    // Reducir el área efectiva de colisión para evitar choques con bordes transparentes.
+    // Se usa un porcentaje del tamaño actual para que escale con el sprite.
+    const double insetXRatio = 0.20; // 20% por lado
+    const double insetYRatio = 0.10; // 10% por lado
+
+    int insetX = int(rect.width() * insetXRatio);
+    int insetY = int(rect.height() * insetYRatio);
+
+    // Asegurar que el hitbox no colapse en tamaños muy pequeños
+    int minHalfW = 2;
+    int minHalfH = 2;
+    insetX = std::min(insetX, std::max(0, rect.width()/2 - minHalfW));
+    insetY = std::min(insetY, std::max(0, rect.height()/2 - minHalfH));
+
+    return rect.adjusted(insetX, insetY, -insetX, -insetY);
 }

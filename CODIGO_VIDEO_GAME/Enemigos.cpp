@@ -196,6 +196,23 @@ void Enemigos::update(double dt, int width, int height) {
 
     // actualizar bounds
     bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
+
+    // Actualizar rotación si está habilitada
+    stepRotation(dt);
+}
+
+void Enemigos::stepRotation(double dt)
+{
+    if (!rotateSprite) return;
+    rotationToggleAccum += dt;
+    if (rotationToggleAccum >= rotationToggleInterval) {
+        rotationDir = -rotationDir; // alternar sentido
+        rotationToggleAccum = 0.0;
+    }
+    rotationAngle += rotationDir * rotationSpeedDeg * dt;
+    // mantener en [0, 360)
+    if (rotationAngle >= 360.0) rotationAngle -= 360.0;
+    if (rotationAngle < 0.0) rotationAngle += 360.0;
 }
 
 
@@ -205,8 +222,21 @@ void Enemigos::draw(QPainter &p)
     if (!activo) return;
 
     if (usaSprite && !sprite.isNull()) {
-        //  DIBUJAR SPRITE ESCALADO AL TAMAÑO DEL ENEMIGO
-        p.drawPixmap(bounds, sprite);
+        if (rotateSprite) {
+            // Dibujar con rotación alrededor del centro del enemigo
+            p.save();
+            QPoint center = bounds.center();
+            p.translate(center);
+            p.rotate(rotationAngle);
+            QPixmap scaled = sprite.scaled(bounds.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            QRect localRect(-bounds.width()/2, -bounds.height()/2, bounds.width(), bounds.height());
+            p.drawPixmap(localRect.topLeft(), scaled);
+            p.restore();
+        } else {
+            // Dibujar sprite escalado explícitamente al tamaño del enemigo
+            QPixmap scaled = sprite.scaled(bounds.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            p.drawPixmap(bounds.topLeft(), scaled);
+        }
     } else {
         // fallback: círculo rojo
         p.setBrush(Qt::red);

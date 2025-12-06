@@ -50,6 +50,13 @@ public:
 
     //Sprites enemigo bicicleta nivel 2
     QString bicicleta_sprite;
+    // Sprite enemigo "rodador" para Nivel 1
+    QString rodador_sprite;
+
+    // Sprites de autos enemigos del Nivel 3
+    QString lvl3_carro1;
+    QString lvl3_carro2;
+    QString lvl3_carro3;
 
     // choque enemigos
     QString Choque;

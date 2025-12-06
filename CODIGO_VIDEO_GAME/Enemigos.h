@@ -60,21 +60,23 @@ public:
     QPixmap spriteNormal;
     QPixmap spriteChoque;
 
-    //Sprite enemigos rebote
+    // Rotación opcional del sprite (para "rodador")
+    bool rotateSprite = false;
+    double rotationAngle = 0.0;         // grados
+    int rotationDir = 1;                // 1 horario, -1 antihorario
+    double rotationSpeedDeg = 180.0;    // grados por segundo
+    double rotationToggleAccum = 0.0;   // acumulador para alternar
+    double rotationToggleInterval = 0.5;// segundos para alternar sentido
 
-    QPixmap spriteNormalDerecha;
-    QPixmap spriteNormalIzquierda;
-    bool mirandoDerecha = true;
-
-    QPixmap spriteNormalArriba;
-    QPixmap spriteNormalAbajo;
-    bool mirandoArriba = true;
+    // Atributo opcional de carril para Nivel 3
+    int lane = -1; // 0..2 cuando se usa carril fijo
 
 
 
     // Funciones
     void update(double dt, int width, int height);
     void draw(QPainter &p);
+    void stepRotation(double dt);
 
     // Mantener compatibilidad con tu código antiguo
     QRect getBounds() const { return bounds; }
