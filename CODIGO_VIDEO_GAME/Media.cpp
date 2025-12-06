@@ -38,6 +38,13 @@ void Media::cargarMedia() {
 
     policia_sprite = ":/sprite/sprite/Poli_W.png";
     bicicleta_sprite = ":/sprite/sprite/Bici.png";
+    // Sprite enemigo tipo rodador (Nivel 1)
+    rodador_sprite = ":/sprite/sprite/rodador.png";
+
+    // Sprites de autos enemigos del Nivel 3
+    lvl3_carro1 = ":/sprite/sprite/lvel3_Carro1.png";
+    lvl3_carro2 = ":/sprite/sprite/lvel3_Carro2.png";
+    lvl3_carro3 = ":/sprite/sprite/lvel3_Carro3.png";
 
     //Sprites choque
 

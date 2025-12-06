@@ -19,6 +19,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 private slots:
     void onTick();
@@ -44,6 +45,10 @@ private:
     int desiredFrame = 0;
     void updatePlayerSkin();
 
+    // Estado de teclas mantenidas para movimiento continuo
+    bool leftHeld = false;
+    bool rightHeld = false;
+
     // Temporización de transición de animación
     int animAccumulatorMs = 0;   // acumula tiempo hasta el próximo paso
     int animStepMs = 100;        // duración actual del paso
@@ -53,6 +58,24 @@ private:
     std::vector<Enemigos> enemigos;
     void spawnObstacles();
     void checkCollisions();
+
+    // Periodo de gracia al inicio: enemigos visibles pero sin daño
+    bool graceActive = false;
+    int graceMsRemaining = 3000; // milisegundos de gracia
+    bool firstSpawnDone = false; // reservado (no usado)
+    int skipSpawnsRemaining = 0; // sin saltos de oleadas
+
+    // Ajustes de colisión específicos de Nivel 3
+    bool collisionEnabledL3 = true;          // permite deshabilitar colisiones en L3 si se desea
+    double l3ExtraInsetXRatio = 0.15;        // reducción adicional horizontal del hitbox del jugador (por lado)
+    double l3ExtraInsetYRatio = 0.08;        // reducción adicional vertical del hitbox del jugador (por lado)
+    double l3MinOverlapAreaRatio = 0.08;     // área mínima de solapamiento relativa al área del enemigo
+
+    // Lineas fijas para spawn de enemigos (X) y altura fija (Y)
+    int laneX1 = 580;  // carril izquierdo (px)
+    int laneX2 = 625;  // carril centro (px)
+    int laneX3 = 680; // carril derecho (px)
+    int laneSpawnY = 400; // altura de aparición (negativo = arriba, fuera de pantalla)
 };
 
 #endif // LEVEL3WIDGET_H
