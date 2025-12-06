@@ -65,6 +65,11 @@ public:
     // Alias opcional para "derecha"; si no se asigna, usar spriteNormal
     QPixmap spriteNormalDerecha;
     QPixmap spriteChoque;
+    // Diagonales específicas que necesites (ej. S+D en tu mapeo)
+    QPixmap spriteDiagonalSD;
+    QPixmap spriteDiagonalSA;
+    QPixmap spriteDiagonalWD;
+    QPixmap spriteDiagonalWA;
 
     // Estado de mirada/dirección horizontal y vertical
     bool mirandoDerecha = true;

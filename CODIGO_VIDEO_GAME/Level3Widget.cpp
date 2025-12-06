@@ -48,6 +48,9 @@ Level3Widget::Level3Widget(QWidget *parent)
     // Crear enemigos iniciales inmediatamente (visibles pero sin daño durante la gracia)
     spawnObstacles();
 
+    // No crear trofeo inmediatamente: esperar un pequeño retraso inicial
+    trophyRespawnSec = initialTrophyDelaySec;
+
     connect(&timer, &QTimer::timeout, this, &Level3Widget::onTick);
     timer.start(int(dt*1000));
 }
@@ -82,8 +85,85 @@ void Level3Widget::spawnObstacles() {
     }
 }
 
+// Utilidad local para obtener un aleatorio [0,1] sin depender de QRandomGenerator
+static inline double rand01() {
+    return double(std::rand()) / double(RAND_MAX);
+}
+
+void Level3Widget::spawnTrophy() {
+    // Permitir solo un trofeo activo a la vez
+    trofeos.clear();
+
+    // Elegir carril con mayor distancia vertical respecto a los autos en spawn,
+    // evitando repetir el último carril usado
+    const int laneXs[3] = { laneX1, laneX2, laneX3 };
+    double laneScore[3] = { -1.0, -1.0, -1.0 };
+    for (int li=0; li<3; ++li) {
+        double minDist = 1e9;
+        for (auto &e : enemigos) {
+            if (!e.activo) continue;
+            if (e.lane == li) {
+                minDist = std::min(minDist, std::abs(e.pos_f.y() - double(laneSpawnY)));
+            }
+        }
+        laneScore[li] = minDist;
+    }
+    // Construir lista de candidatos ordenados por distancia descendente
+    std::array<int,3> lanes = {0,1,2};
+    std::sort(lanes.begin(), lanes.end(), [&](int a, int b){ return laneScore[a] > laneScore[b]; });
+    int bestLane = lanes[0];
+    // Evitar carril repetido si hay alternativas razonables
+    if (bestLane == lastTrophyLane) {
+        for (int i=1; i<3; ++i) {
+            if (lanes[i] != lastTrophyLane) { bestLane = lanes[i]; break; }
+        }
+    }
+    double bestDist = laneScore[bestLane];
+    // Si todos los carriles están ocupados cerca, usar retraso adicional aleatorio
+    if (bestDist < 120.0) {
+        double jitter = 0.6 + rand01() * 0.8; // 0.6–1.4s
+        trophyRespawnSec = jitter;
+        return;
+    }
+
+    Enemigos t;
+    t.activo = true;
+    t.tipo_objeto = "trofeo";
+    t.tipo_movimiento = Enemigos::TM_Linear;
+    t.lane = bestLane;
+    int spawnX = laneXs[bestLane];
+    t.pos_f = QPointF(spawnX, laneSpawnY);
+    t.pos_inicial = t.pos_f;
+    t.velocidad = QPointF(0, 150);
+    t.tamaño = QSize(40, 24);
+    t.usaSprite = true;
+    t.sprite = QPixmap(media.trofeo_sprite);
+    t.spriteNormal = t.sprite;
+    t.bounds = QRect(int(t.pos_f.x()), int(t.pos_f.y()), t.tamaño.width(), t.tamaño.height());
+    trofeos.push_back(t);
+    lastTrophyLane = bestLane;
+}
+
 void Level3Widget::onTick() {
     double sec = dt;
+    // Temporizador en segundo plano (no visible)
+    if (!nivelGanado) {
+        tiempoAcumulado += sec;
+    }
+
+    // Gestionar respawn diferido de trofeos
+    bool trophyActive = false;
+    for (auto &t : trofeos) if (t.activo) { trophyActive = true; break; }
+    if (!trophyActive) {
+        if (trophyRespawnSec > 0.0) {
+            trophyRespawnSec -= sec;
+        }
+        if (trophyRespawnSec <= 0.0) {
+            spawnTrophy();
+            // resetear para evitar spawns múltiples en el mismo tick
+            trophyRespawnSec = 0.0;
+        }
+    }
     // Gestionar periodo de gracia: sólo desactiva el daño por colisión
     if (graceActive) {
         graceMsRemaining -= int(dt * 1000);
@@ -155,7 +235,59 @@ void Level3Widget::onTick() {
             e.bounds.moveTopLeft(QPoint(int(e.pos_f.x()), int(e.pos_f.y())));
         }
     }
+
+    // Actualizar trofeo con misma lógica de carriles y crecimiento
+    for (auto &t : trofeos) {
+        if (!t.activo) continue;
+        if (t.tipo_movimiento == Enemigos::TM_Linear) {
+            // Movimiento vertical principal
+            t.pos_f.setY(t.pos_f.y() + t.velocidad.y() * sec);
+
+            // Deriva lateral según carril, dentro de la carretera
+            const double lateralSpeed = 220.0;
+            int leftBoundX = roadX;
+            int rightBoundX = roadX + roadWidth - t.tamaño.width();
+            if (t.lane == 0) {
+                t.pos_f.setX(std::max<double>(leftBoundX, t.pos_f.x() - lateralSpeed * sec));
+            } else if (t.lane == 2) {
+                t.pos_f.setX(std::min<double>(rightBoundX, t.pos_f.x() + lateralSpeed * sec));
+            }
+
+            // Escalado por perspectiva
+            const double minH = 15.0;
+            const double maxH = 330.0;
+            const double aspect = 60.0/36.0;
+            double range = (height() - t.pos_inicial.y()) + 120.0;
+            if (range < 1.0) range = 1.0;
+            double norm = (t.pos_f.y() - t.pos_inicial.y()) / range;
+            norm = std::clamp(norm, 0.0, 1.0);
+            double curve = std::pow(norm, 1.4);
+            int newH = int(minH + curve * (maxH - minH));
+            int newW = int(newH * aspect);
+            t.tamaño = QSize(newW, newH);
+            t.bounds.setSize(t.tamaño);
+            // Si sale por abajo y no fue atrapado: desactivar y reprogramar respawn en otro carril
+            if (t.pos_f.y() > height() + 80) {
+                lastTrophyLane = t.lane; // recordar carril actual para no repetir
+                t.activo = false;
+                double jitter = 0.8 + rand01() * 0.9; // 0.8–1.7s
+                trophyRespawnSec = jitter;
+            }
+            t.bounds.moveTopLeft(QPoint(int(t.pos_f.x()), int(t.pos_f.y())));
+        }
+    }
     checkCollisions();
+
+    // Condición de victoria: tiempo >= 35s y trofeos completos
+    if (!nivelGanado && tiempoAcumulado >= 35.0 && trofeosRecolectados >= totalTrofeosObjetivo) {
+        nivelGanado = true;
+        // Detener movimiento general
+        for (auto &e : enemigos) e.activo = false;
+        for (auto &t : trofeos) t.activo = false;
+        timer.stop();
+        mostrarVictoria = true;
+        esperandoDecision = true;
+    }
 
     // Temporizar la transición de animación hacia el objetivo
     animAccumulatorMs += int(dt * 1000);
@@ -217,6 +349,48 @@ void Level3Widget::checkCollisions() {
         }
     }
     jugador.vidas = inter.contador_vidas;
+
+    // Colisión con trofeos: aplicar mismas reglas que enemigos (hitbox recortado, área mínima y tamaño similar)
+    for (auto &t : trofeos) {
+        if (!t.activo) continue;
+        // Hitbox del jugador con recorte adicional
+        QRect playerHB = jugador.getHitbox();
+        int extraX = int(playerHB.width() * l3ExtraInsetXRatio);
+        int extraY = int(playerHB.height() * l3ExtraInsetYRatio);
+        if (extraX > 0 || extraY > 0) playerHB = playerHB.adjusted(extraX, extraY, -extraX, -extraY);
+
+        QRect trophyB = t.getBounds();
+        QRect overlap = playerHB.intersected(trophyB);
+        // Exigir área mínima de solapamiento
+        double minArea = l3MinOverlapAreaRatio * (trophyB.width() * trophyB.height());
+        if (overlap.isNull() || (overlap.width() * overlap.height()) < minArea) continue;
+
+        // Verificación de "profundidad" similar a enemigos: tamaño esperado alrededor de 140px de alto
+        const int expectedH = 140;
+        const int tolerancePx = 20;
+        bool similarScale = std::abs(t.getBounds().height() - expectedH) <= tolerancePx;
+        if (!similarScale) continue;
+
+        // Recoger trofeo: efecto de crecimiento breve y conteo
+        t.tamaño = QSize(int(t.tamaño.width() * 1.3), int(t.tamaño.height() * 1.3));
+        t.bounds.setSize(t.tamaño);
+        media.reproducir_sonidoTrofeo();
+        if (trofeosRecolectados < totalTrofeosObjetivo)
+            trofeosRecolectados++;
+        // Desaparecer y programar respawn en 3 segundos
+        t.activo = false;
+        trophyRespawnSec = 3.0;
+        break; // sólo uno por tick
+    }
+
+    // Game Over si se quedan sin vidas
+    if (jugador.vidas <= 0 && !mostrarGameOver) {
+        mostrarGameOver = true;
+        esperandoDecision = true;
+        for (auto &e : enemigos) e.activo = false;
+        for (auto &t : trofeos) t.activo = false;
+        timer.stop();
+    }
 }
 
 void Level3Widget::showEvent(QShowEvent *event) {
@@ -230,6 +404,15 @@ void Level3Widget::showEvent(QShowEvent *event) {
 void Level3Widget::keyPressEvent(QKeyEvent *event)
 {
     const int key = event->key();
+    if (esperandoDecision) {
+        if (key == Qt::Key_C) {
+            reiniciarNivel3();
+            return;
+        } else if (key == Qt::Key_N) {
+            emit volverAlMenu();
+            return;
+        }
+    }
     if (key == Qt::Key_A || key == Qt::Key_Left) {
         desiredFrame = -2;
         leftHeld = true;
@@ -280,13 +463,75 @@ void Level3Widget::paintEvent(QPaintEvent *) {
         e.draw(p);
     }
 
-    // dibujar jugador (moto) al final para que quede POR ENCIMA
+    // Dibujar trofeo con mismo estilo
+    for (auto &t : trofeos) {
+        if (t.activo) t.draw(p);
+    }
+
+    // Dibujar jugador por encima de los enemigos y trofeos
     jugador.draw(p);
 
-    // HUD
+    // HUD: mostrar vidas arriba y trofeos debajo (sin tiempo en pantalla)
+    QFont hudFont("Arial", 28, QFont::Bold);
+    p.setFont(hudFont);
     p.setPen(Qt::white);
-    p.drawText(10,20, QString("Vidas: %1").arg(jugador.vidas));
+    p.drawText(QPoint(10, 40), QString("Vidas: %1").arg(jugador.vidas));
+    p.drawText(QPoint(10, 90), QString("Trofeos: %1/%2").arg(trofeosRecolectados).arg(totalTrofeosObjetivo));
+
+    // Overlays Game Over / Victoria estilo niveles 1 y 2
+    if (mostrarGameOver || mostrarVictoria) {
+        p.fillRect(rect(), QColor(0,0,0,160));
+        QPixmap overlayImg;
+        if (mostrarGameOver) overlayImg.load(media.Gameover);
+        else overlayImg.load(media.victoriaImg);
+        if (!overlayImg.isNull()) {
+            QSize targetSize(int(width()*0.7), int(height()*0.7));
+            QPixmap scaled = overlayImg.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            int cx = (width() - scaled.width())/2;
+            int cy = (height() - scaled.height())/2;
+            p.drawPixmap(cx, cy, scaled);
+        }
+        QFont f("Arial", 24, QFont::Bold);
+        p.setFont(f);
+        p.setPen(Qt::white);
+        QRect instrRect(0, height()-180, width(), 100);
+        p.drawText(instrRect, Qt::AlignCenter, "Presiona C para reintentar o N para volver al menú");
+    }
 }
+
+void Level3Widget::reiniciarNivel3() {
+    // Reset flags
+    mostrarGameOver = false;
+    mostrarVictoria = false;
+    esperandoDecision = false;
+    nivelGanado = false;
+    tiempoAcumulado = 0.0;
+    trofeosRecolectados = 0;
+
+    // Reset vidas
+    inter.contador_vidas = 3;
+    jugador.vidas = inter.contador_vidas;
+
+    // Reposicionar jugador
+    playerPosInitialized = false;
+
+    // Respawn enemigos y limpiar trofeo
+    spawnObstacles();
+    trofeos.clear();
+    // Aleatorizar retraso inicial y evitar repetir carril previo
+    lastTrophyLane = -1;
+    initialTrophyDelaySec = 1.0 + rand01() * 1.2; // 1.0–2.2s
+    trophyRespawnSec = initialTrophyDelaySec; // retraso inicial para evitar simultaneidad con autos
+
+    // Reset input
+    leftHeld = rightHeld = false;
+
+    // Reanudar loop
+    if (!timer.isActive()) timer.start(int(dt*1000));
+    update();
+}
+
+    
 
 void Level3Widget::updatePlayerSkin() {
     switch (currentFrame) {

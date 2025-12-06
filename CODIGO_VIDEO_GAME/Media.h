@@ -45,8 +45,14 @@ public:
     QString sonido_loss;
 
     //Sprites enemigo policia nivel 2
-    QString policia_sprite;
-    QString policia_sprite_S;
+    QString policia_sprite;     // W (arriba)
+    QString policia_sprite_S;   // S (abajo)
+    QString policia_sprite_A;   // A (izquierda)
+    QString policia_sprite_D;   // D (derecha)
+    QString policia_sprite_WD;  // diagonal arriba-derecha
+    QString policia_sprite_SD;  // diagonal abajo-derecha
+    QString policia_sprite_SA;  // diagonal abajo-izquierda
+    QString policia_sprite_WA;  // diagonal arriba-izquierda
 
     //Sprites enemigo bicicleta nivel 2
     QString bicicleta_sprite;

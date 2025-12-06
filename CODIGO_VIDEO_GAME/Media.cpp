@@ -36,8 +36,14 @@ void Media::cargarMedia() {
 
     //Sprites enemigos nivel 2
 
-    policia_sprite = ":/sprite/sprite/Poli_W.png";
-    policia_sprite_S = ":/sprite/sprite/Poli_S.png";
+    policia_sprite   = ":/sprite/sprite/Poli_W.png";   // W
+    policia_sprite_S = ":/sprite/sprite/Poli_S.png";   // S
+    policia_sprite_A = ":/sprite/sprite/Poli_A.png";   // A
+    policia_sprite_D = ":/sprite/sprite/Poli_D.png";   // D
+    policia_sprite_WD = ":/sprite/sprite/Poli_WD.png"; // WD (arriba-derecha)
+    policia_sprite_SD = ":/sprite/sprite/Poli_SD.png"; // SD (abajo-derecha)
+    policia_sprite_SA = ":/sprite/sprite/Poli_SA.png"; // SA (abajo-izquierda)
+    policia_sprite_WA = ":/sprite/sprite/Poli_WA.png"; // WA (arriba-izquierda)
     bicicleta_sprite = ":/sprite/sprite/Bici.png";
     // Sprite enemigo tipo rodador (Nivel 1)
     rodador_sprite = ":/sprite/sprite/rodador.png";

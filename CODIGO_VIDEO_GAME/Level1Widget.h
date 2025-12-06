@@ -14,6 +14,7 @@ class Level1Widget : public QWidget {
     Q_OBJECT
 public:
     explicit Level1Widget(QWidget *parent = nullptr);
+    void reiniciarNivel1();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -57,6 +58,25 @@ private:
 
     // Velocidad de movimiento del jugador en Nivel 1 (px por pulsación)
     int playerMoveSpeed = 16; // sube este valor para más velocidad
+
+    // =========================
+    // GAME OVER / VICTORIA
+    // =========================
+    bool mostrarGameOver = false;
+    bool mostrarVictoria = false;
+    bool nivelGanado = false;
+    bool esperandoDecision = false;
+    QPixmap gameOverImg;
+    QPixmap victoriaImg;
+
+    // =========================
+    // TIEMPO DEL NIVEL (igual que Nivel 2)
+    // =========================
+    double tiempoLimite = 30.0;
+    double tiempoRestante = 30.0;
+
+signals:
+    void volverAlMenu();
 };
 
 #endif // LEVEL1WIDGET_H

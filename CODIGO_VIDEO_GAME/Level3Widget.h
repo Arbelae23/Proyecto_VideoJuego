@@ -14,6 +14,10 @@ class Level3Widget : public QWidget {
     Q_OBJECT
 public:
     explicit Level3Widget(QWidget *parent = nullptr);
+    void reiniciarNivel3();
+
+signals:
+    void volverAlMenu();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -76,6 +80,22 @@ private:
     int laneX2 = 625;  // carril centro (px)
     int laneX3 = 680; // carril derecho (px)
     int laneSpawnY = 400; // altura de aparición (negativo = arriba, fuera de pantalla)
+
+    // --- Trofeos Nivel 3 ---
+    std::vector<Enemigos> trofeos; // trofeos con mismo movimiento que enemigos
+    void spawnTrophy();            // crea un trofeo en uno de los 3 carriles
+    int trofeosRecolectados = 0;   // contador actual
+    int totalTrofeosObjetivo = 15;  // meta actualizada
+    double tiempoAcumulado = 0.0;  // temporizador en segundo plano (cuenta hacia 20s)
+    bool nivelGanado = false;      // bandera de victoria cuando tiempo>=20s y trofeos completos
+    double trophyRespawnSec = 0.0; // tiempo para esperar antes de aparecer trofeo
+    double initialTrophyDelaySec = 1.5; // retraso inicial para evitar simultaneidad con autos
+    int lastTrophyLane = -1;       // recordar último carril usado para no repetir
+
+    // Overlays y estado de fin
+    bool mostrarGameOver = false;
+    bool mostrarVictoria = false;
+    bool esperandoDecision = false;
 };
 
 #endif // LEVEL3WIDGET_H

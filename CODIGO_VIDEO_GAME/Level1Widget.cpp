@@ -20,6 +20,15 @@ Level1Widget::Level1Widget(QWidget *parent)
     media.cargarMedia();
     // Cargar imagen de fondo usando la ruta definida en Media
     background.load(media.background_nivel);
+    // Cargar pantallas de Game Over y Victoria
+    if (!media.Gameover.isEmpty()) {
+        gameOverImg.load(media.Gameover);
+    }
+    if (!media.victoriaImg.isEmpty()) {
+        victoriaImg.load(media.victoriaImg);
+    }
+    // Inicializar temporización del nivel (igual a Nivel 2)
+    tiempoRestante = tiempoLimite;
     // Configurar velocidad de desplazamiento del camino (px/seg)
     media.setRoadSpeed(240);
     media.setRoadDirectionDown(false); // mover hacia arriba
@@ -84,6 +93,8 @@ void Level1Widget::spawnEnemies() {
         e.usaSprite = true;
         e.sprite = QPixmap(media.rodador_sprite);
         e.spriteNormal = e.sprite;
+        // Sprite de choque (para efecto visual y cooldown)
+        e.spriteChoque = QPixmap(media.Choque);
         e.rotateSprite = true;
         e.rotationSpeedDeg = 240.0;   // un poco más rápido
         e.rotationToggleInterval = 0.6; // alterna sentido cada ~0.6s
@@ -107,6 +118,24 @@ void Level1Widget::spawnEnemies() {
 
 void Level1Widget::onTick() {
     double sec = dt;
+    // Si estamos esperando decisión (Game Over o Victoria), no actualizar juego
+    if (esperandoDecision) {
+        return;
+    }
+
+    // Actualizar cuenta regresiva de nivel y verificar victoria
+    tiempoRestante -= sec;
+    if (tiempoRestante <= 0.0 && jugador.vidas > 0) {
+        mostrarVictoria = true;
+        nivelGanado = true;
+        esperandoDecision = true;
+        media.reproducir_win();
+        // Detener juego y enemigos
+        for (auto &e : enemigos) e.activo = false;
+        timer.stop();
+        update();
+        return;
+    }
     // Movimiento continuo del jugador basado en teclas mantenidas
     double dx = 0.0;
     const double playerSpeedPxSec = 550.0; // velocidad lateral en px/s
@@ -181,10 +210,14 @@ void Level1Widget::onTick() {
 void Level1Widget::checkCollisions() {
     for (auto &e : enemigos) {
         if (!e.activo) continue;
+        // Evitar daño repetido: respetar cooldown de golpe y estado de choque
+        if (e.enChoque || e.tiempoCooldown > 0.0) continue;
         if (jugador.getBounds().intersects(e.getBounds())) {
             // colisión: quitar vida y resetear enemigo
             inter.quitar_vida(1);
             media.reproducir_sonidoChoque();
+            // Activar cooldown del enemigo para que no vuelva a dañar inmediatamente
+            e.tiempoCooldown = e.cooldownGolpe;
             // respawn enemigo arriba dentro del rango permitido
             e.pos_f.setY(-150);
             const int range = std::max(1, moveXMax - moveXMin - e.tamaño.width());
@@ -194,6 +227,16 @@ void Level1Widget::checkCollisions() {
     }
     // sincronizar vidas
     jugador.vidas = inter.contador_vidas;
+
+    // Si se pierden todas las vidas: Game Over con mismas opciones que Nivel 2
+    if (jugador.vidas <= 0 && !mostrarGameOver) {
+        mostrarGameOver = true;
+        esperandoDecision = true;
+        media.reproducir_loss();
+        for (auto &e : enemigos) e.activo = false;
+        timer.stop();
+        update();
+    }
 }
 
 void Level1Widget::paintEvent(QPaintEvent *) {
@@ -228,13 +271,56 @@ void Level1Widget::paintEvent(QPaintEvent *) {
     // dibujar enemigos
     for (auto &e : enemigos) e.draw(p);
 
-    // HUD vidas
-    p.setPen(Qt::black);
-    p.drawText(10,20, QString("Vidas: %1").arg(jugador.vidas));
+    // HUD: Vidas y Tiempo (grandes y blancos)
+    {
+        QFont f = p.font();
+        f.setBold(true);
+        f.setPointSize(28); // tamaño grande
+        p.setFont(f);
+        p.setPen(Qt::white);
+        // Bajamos un poco para que no se corten con la escena
+        p.drawText(10, 40, QString("Vidas: %1").arg(jugador.vidas));
+        p.drawText(10, 90, QString("Tiempo: %1").arg((int)tiempoRestante));
+    }
+
+    // Mostrar overlays de Game Over / Victoria
+    if (mostrarGameOver || mostrarVictoria) {
+        // Fondo semi-transparente
+        p.fillRect(rect(), QColor(0,0,0,128));
+        // Elegir imagen
+        QPixmap overlay = mostrarGameOver ? gameOverImg : victoriaImg;
+        if (!overlay.isNull()) {
+            QSize targetSize = overlay.size();
+            // Escalar si la imagen es muy grande
+            const int maxW = width() * 0.7;
+            const int maxH = height() * 0.7;
+            if (targetSize.width() > maxW || targetSize.height() > maxH) {
+                overlay = overlay.scaled(maxW, maxH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                targetSize = overlay.size();
+            }
+            QPoint topLeft((width() - targetSize.width())/2, (height() - targetSize.height())/2 - 40);
+            p.drawPixmap(topLeft, overlay);
+        }
+        // Texto de instrucciones (igual que Nivel 2: C reintentar, N menú)
+        p.setPen(Qt::white);
+        // Subimos un poco el texto para mayor visibilidad
+        p.drawText(QRect(0, height()-180, width(), 100), Qt::AlignCenter,
+                   QString::fromUtf8("Presiona C para reintentar o N para volver al menú"));
+    }
 }
 
 void Level1Widget::keyPressEvent(QKeyEvent *event) {
     const int key = event->key();
+    // Si estamos en pantalla de decisión, manejar C/N
+    if (esperandoDecision) {
+        if (key == Qt::Key_C) {
+            reiniciarNivel1();
+            return;
+        } else if (key == Qt::Key_N) {
+            emit volverAlMenu();
+            return;
+        }
+    }
     if (key == Qt::Key_A || key == Qt::Key_Left) {
         leftHeld = true;
         // movimiento inmediato para eliminar sensación de retraso inicial
@@ -256,5 +342,34 @@ void Level1Widget::keyReleaseEvent(QKeyEvent *event) {
     } else if (key == Qt::Key_D || key == Qt::Key_Right) {
         rightHeld = false;
     }
+    update();
+}
+
+void Level1Widget::reiniciarNivel1() {
+    // Resetear estados
+    mostrarGameOver = false;
+    mostrarVictoria = false;
+    nivelGanado = false;
+    esperandoDecision = false;
+    tiempoRestante = tiempoLimite;
+    // Resetear vidas
+    jugador.vidas = 3;
+    inter.contador_vidas = jugador.vidas;
+    // Reposicionar jugador al centro abajo con margen
+    playerPosInitialized = false; // recalcular en el próximo paint
+    const int newW = jugador.rect.width();
+    const int newH = jugador.rect.height();
+    int margin = playerBottomMargin;
+    if (margin < 0) margin = 0;
+    int y = height() - margin - newH;
+    if (y < 0) y = 0;
+    if (y > height() - newH) y = height() - newH;
+    jugador.rect = QRect((width()/2) - newW/2, y, newW, newH);
+    // Respawn enemigos
+    spawnEnemies();
+    // Reiniciar input
+    leftHeld = rightHeld = false;
+    // Reanudar
+    if (!timer.isActive()) timer.start(int(dt*1000));
     update();
 }

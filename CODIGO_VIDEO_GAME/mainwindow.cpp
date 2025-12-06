@@ -32,6 +32,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnBack, &QPushButton::clicked, this, &MainWindow::returnToMenu);
     connect(level2, &Level2Widget::volverAlMenu,
             this, &MainWindow::returnToMenu);
+    connect(level1, &Level1Widget::volverAlMenu,
+            this, &MainWindow::returnToMenu);
+    connect(level3, &Level3Widget::volverAlMenu,
+            this, &MainWindow::returnToMenu);
+    connect(level2, &Level2Widget::volverAlMenu,
+            this, &MainWindow::returnToMenu);
 }
 
 MainWindow::~MainWindow() {
@@ -39,6 +45,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::openLevel1() {
+    level1->reiniciarNivel1();
     ui->stackedWidget->setCurrentIndex(1);
     level1->setFocus();
 }
@@ -51,6 +58,7 @@ void MainWindow::openLevel2() {
 
 
 void MainWindow::openLevel3() {
+    level3->reiniciarNivel3();
     ui->stackedWidget->setCurrentIndex(3);
     level3->setFocus();
 }

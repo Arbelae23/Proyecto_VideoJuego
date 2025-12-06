@@ -174,6 +174,47 @@ void Enemigos::update(double dt, int width, int height) {
         tiempo_sen += dt;
         pos_f.setX(pos_base.x() + amplitud_seno * qSin(tiempo_sen * frecuencia_seno));
         pos_f.setY(pos_base.y());
+
+        // Selección dinámica de sprite según signos de dx/dy
+        {
+            const double dx_dt = amplitud_seno * frecuencia_seno * qCos(tiempo_sen * frecuencia_seno);
+            const double dy_dt = velocidad.y();
+            const double eps = 1e-3; // umbral pequeño para evitar parpadeos
+
+            // Actualizar banderas de mirada
+            if (dx_dt > eps) mirandoDerecha = true;
+            else if (dx_dt < -eps) mirandoDerecha = false;
+            if (dy_dt > eps) mirandoArriba = false;
+            else if (dy_dt < -eps) mirandoArriba = true;
+
+            // Elegir sprite según cuadrante/dirección
+            if (dy_dt > eps && dx_dt > eps) {
+                if (!spriteDiagonalSD.isNull()) sprite = spriteDiagonalSD; // abajo-derecha
+                else if (!spriteNormalDerecha.isNull()) sprite = spriteNormalDerecha;
+                else if (!spriteNormalAbajo.isNull()) sprite = spriteNormalAbajo;
+            } else if (dy_dt > eps && dx_dt < -eps) {
+                if (!spriteDiagonalSA.isNull()) sprite = spriteDiagonalSA; // abajo-izquierda
+                else if (!spriteNormalIzquierda.isNull()) sprite = spriteNormalIzquierda;
+                else if (!spriteNormalAbajo.isNull()) sprite = spriteNormalAbajo;
+            } else if (dy_dt < -eps && dx_dt > eps) {
+                if (!spriteDiagonalWD.isNull()) sprite = spriteDiagonalWD; // arriba-derecha
+                else if (!spriteNormalDerecha.isNull()) sprite = spriteNormalDerecha;
+                else if (!spriteNormalArriba.isNull()) sprite = spriteNormalArriba;
+            } else if (dy_dt < -eps && dx_dt < -eps) {
+                if (!spriteDiagonalWA.isNull()) sprite = spriteDiagonalWA; // arriba-izquierda
+                else if (!spriteNormalIzquierda.isNull()) sprite = spriteNormalIzquierda;
+                else if (!spriteNormalArriba.isNull()) sprite = spriteNormalArriba;
+            } else if (dy_dt > eps) {
+                if (!spriteNormalAbajo.isNull()) sprite = spriteNormalAbajo; // puro abajo
+            } else if (dy_dt < -eps) {
+                if (!spriteNormalArriba.isNull()) sprite = spriteNormalArriba; // puro arriba
+            } else if (dx_dt > eps) {
+                if (!spriteNormalDerecha.isNull()) sprite = spriteNormalDerecha; // puro derecha
+                else if (!spriteNormal.isNull()) sprite = spriteNormal;
+            } else if (dx_dt < -eps) {
+                if (!spriteNormalIzquierda.isNull()) sprite = spriteNormalIzquierda; // puro izquierda
+            }
+        }
         break;
 
     case TM_Espiral:
