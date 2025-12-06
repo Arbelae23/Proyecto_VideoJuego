@@ -85,7 +85,7 @@ private:
     std::vector<Enemigos> trofeos; // trofeos con mismo movimiento que enemigos
     void spawnTrophy();            // crea un trofeo en uno de los 3 carriles
     int trofeosRecolectados = 0;   // contador actual
-    int totalTrofeosObjetivo = 15;  // meta actualizada
+    int totalTrofeosObjetivo = 10;  // meta de trofeos
     double tiempoAcumulado = 0.0;  // temporizador en segundo plano (cuenta hacia 20s)
     bool nivelGanado = false;      // bandera de victoria cuando tiempo>=20s y trofeos completos
     double trophyRespawnSec = 0.0; // tiempo para esperar antes de aparecer trofeo

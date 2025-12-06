@@ -20,8 +20,6 @@ Level2Widget::Level2Widget(QWidget *parent)
 
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
-    gameOverImg.load(media.Gameover);
-    victoriaImg.load(media.victoriaImg);
 
     // cargar media primero (IMPORTANTE)
     media.cargarMedia();
@@ -31,12 +29,12 @@ Level2Widget::Level2Widget(QWidget *parent)
     jugador.speed = 8;
     jugador.vidas = 3;
 
-    // cargar background desde media (después de cargar media)
-    if (!media.background_nivel2.isEmpty()) {
-        background.load(media.background_nivel2);
-        if (background.isNull()) qDebug() << "Level2: background failed to load:" << media.background_nivel2;
-    } else {
-        qDebug() << "Level2: media.background_nivel2 está vacío";
+    // cargar background desde Media usando caché dinámico
+    try {
+        background = media.getBackgroundNivel2();
+    } catch (const MediaLoadError &ex) {
+        qDebug() << "Level2: fallo al cargar fondo:" << ex.what();
+        background = QPixmap();
     }
 
     // Asignar sprite del jugador desde Media (jugador 2)
@@ -98,30 +96,18 @@ void Level2Widget::setupEnemies()
             e.tamaño.height()
             );
 
-        // SPRITES POLICÍA — 8 DIRECCIONES
-        if (!media.policia_sprite.isEmpty()) {
-            e.spriteNormalArriba.load(media.policia_sprite);      // W
-        }
-        if (!media.policia_sprite_S.isEmpty()) {
-            e.spriteNormalAbajo.load(media.policia_sprite_S);     // S
-        }
-        if (!media.policia_sprite_A.isEmpty()) {
-            e.spriteNormalIzquierda.load(media.policia_sprite_A); // A
-        }
-        if (!media.policia_sprite_D.isEmpty()) {
-            e.spriteNormalDerecha.load(media.policia_sprite_D);   // D
-        }
-        if (!media.policia_sprite_SD.isEmpty()) {
-            e.spriteDiagonalSD.load(media.policia_sprite_SD);     // SD (abajo-derecha)
-        }
-        if (!media.policia_sprite_SA.isEmpty()) {
-            e.spriteDiagonalSA.load(media.policia_sprite_SA);     // SA (abajo-izquierda)
-        }
-        if (!media.policia_sprite_WD.isEmpty()) {
-            e.spriteDiagonalWD.load(media.policia_sprite_WD);     // WD (arriba-derecha)
-        }
-        if (!media.policia_sprite_WA.isEmpty()) {
-            e.spriteDiagonalWA.load(media.policia_sprite_WA);     // WA (arriba-izquierda)
+        // SPRITES POLICÍA — 8 DIRECCIONES (caché dinámico)
+        try {
+            e.spriteNormalArriba    = media.getPoliciaW();
+            e.spriteNormalAbajo     = media.getPoliciaS();
+            e.spriteNormalIzquierda = media.getPoliciaA();
+            e.spriteNormalDerecha   = media.getPoliciaD();
+            e.spriteDiagonalSD      = media.getPoliciaSD();
+            e.spriteDiagonalSA      = media.getPoliciaSA();
+            e.spriteDiagonalWD      = media.getPoliciaWD();
+            e.spriteDiagonalWA      = media.getPoliciaWA();
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level2: fallo sprites policía:" << ex.what();
         }
 
         // Estado inicial: mirando abajo
@@ -133,8 +119,11 @@ void Level2Widget::setupEnemies()
         }
 
 
-        if (!media.Choque.isEmpty()) {
-            e.spriteChoque.load(media.Choque);
+        // Sprite de choque (caché dinámico)
+        try {
+            e.spriteChoque = media.getChoque();
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level2: fallo sprite choque:" << ex.what();
         }
 
 
@@ -179,18 +168,22 @@ void Level2Widget::setupEnemies()
             e.tamaño.height()
             );
 
-        //  Sprite de la bicicleta
-        if (!media.bicicleta_sprite.isEmpty()) {
-            e.spriteNormal.load(media.bicicleta_sprite);
+        //  Sprite de la bicicleta (caché dinámico)
+        try {
+            e.spriteNormal = media.getBicicleta();
             e.spriteNormalIzquierda = e.spriteNormal.transformed(
                 QTransform().scale(-1, 1));  // espejo
             e.sprite = e.spriteNormal;
             e.mirandoDerecha = true;
             e.usaSprite = true;
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level2: fallo sprite bicicleta:" << ex.what();
         }
 
-        if (!media.Choque.isEmpty()) {
-            e.spriteChoque.load(media.Choque);
+        try {
+            e.spriteChoque = media.getChoque();
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level2: fallo sprite choque (bici):" << ex.what();
         }
 
         e.pos_inicial = e.pos_base;
@@ -522,19 +515,17 @@ void Level2Widget::paintEvent(QPaintEvent *)
     {
         // Fondo semi-transparente
         p.fillRect(rect(), QColor(0,0,0,128));
-        // Imagen centrada y escalada
-        if (!victoriaImg.isNull()) {
-            QPixmap overlay = victoriaImg;
-            QSize targetSize = overlay.size();
-            const int maxW = width() * 0.7;
-            const int maxH = height() * 0.7;
-            if (targetSize.width() > maxW || targetSize.height() > maxH) {
-                overlay = overlay.scaled(maxW, maxH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                targetSize = overlay.size();
-            }
-            QPoint topLeft((width() - targetSize.width())/2, (height() - targetSize.height())/2 - 40);
-            p.drawPixmap(topLeft, overlay);
+        // Imagen centrada y escalada (desde caché Media)
+        QPixmap overlay = media.getVictoria();
+        QSize targetSize = overlay.size();
+        const int maxW = width() * 0.7;
+        const int maxH = height() * 0.7;
+        if (targetSize.width() > maxW || targetSize.height() > maxH) {
+            overlay = overlay.scaled(maxW, maxH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            targetSize = overlay.size();
         }
+        QPoint topLeft((width() - targetSize.width())/2, (height() - targetSize.height())/2 - 40);
+        p.drawPixmap(topLeft, overlay);
 
         // Texto de instrucciones (C/N)
         p.setPen(Qt::white);
@@ -556,19 +547,17 @@ void Level2Widget::paintEvent(QPaintEvent *)
     {
         // Fondo semi-transparente
         p.fillRect(rect(), QColor(0,0,0,128));
-        // Imagen centrada y escalada
-        if (!gameOverImg.isNull()) {
-            QPixmap overlay = gameOverImg;
-            QSize targetSize = overlay.size();
-            const int maxW = width() * 0.7;
-            const int maxH = height() * 0.7;
-            if (targetSize.width() > maxW || targetSize.height() > maxH) {
-                overlay = overlay.scaled(maxW, maxH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                targetSize = overlay.size();
-            }
-            QPoint topLeft((width() - targetSize.width())/2, (height() - targetSize.height())/2 - 40);
-            p.drawPixmap(topLeft, overlay);
+        // Imagen centrada y escalada (desde caché Media)
+        QPixmap overlay = media.getGameOver();
+        QSize targetSize = overlay.size();
+        const int maxW = width() * 0.7;
+        const int maxH = height() * 0.7;
+        if (targetSize.width() > maxW || targetSize.height() > maxH) {
+            overlay = overlay.scaled(maxW, maxH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            targetSize = overlay.size();
         }
+        QPoint topLeft((width() - targetSize.width())/2, (height() - targetSize.height())/2 - 40);
+        p.drawPixmap(topLeft, overlay);
 
         // Texto de instrucciones (C/N)
         p.setPen(Qt::white);

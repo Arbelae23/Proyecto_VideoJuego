@@ -29,8 +29,13 @@ Level3Widget::Level3Widget(QWidget *parent)
     jugador.speed = 24; // aumentar velocidad lateral del jugador en nivel 3
     inter.contador_vidas = 3;
     media.cargarMedia();
-    // Cargar imagen de fondo de Nivel 3 desde Media
-    background.load(media.background_nivel3);
+    // Cargar imagen de fondo de Nivel 3 desde Media (caché dinámico)
+    try {
+        background = media.getBackgroundNivel3();
+    } catch (const MediaLoadError &ex) {
+        qDebug() << "Level3: fallo al cargar fondo:" << ex.what();
+        background = QPixmap();
+    }
 
     // Estado inicial de animación y sprite (idle)
     currentFrame = 0;
@@ -72,12 +77,17 @@ void Level3Widget::spawnObstacles() {
         e.velocidad = QPointF(0, 150); // velocidad vertical hacia abajo
         // Tamaño inicial mínimo (consistente con minH=24 en onTick)
         e.tamaño = QSize(40, 24);
-        // Asignar sprite aleatorio entre 3 opciones
+        // Asignar sprite aleatorio entre 3 opciones con excepciones
         e.usaSprite = true;
-        switch (std::rand() % 3) {
-            case 0: e.sprite = QPixmap(media.lvl3_carro1); break;
-            case 1: e.sprite = QPixmap(media.lvl3_carro2); break;
-            default: e.sprite = QPixmap(media.lvl3_carro3); break;
+        try {
+            switch (std::rand() % 3) {
+                case 0: e.sprite = media.getCarro1(); break;
+                case 1: e.sprite = media.getCarro2(); break;
+                default: e.sprite = media.getCarro3(); break;
+            }
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level3: fallo sprite auto (spawn):" << ex.what();
+            e.sprite = QPixmap();
         }
         e.spriteNormal = e.sprite;
         e.bounds = QRect(int(e.pos_f.x()), int(e.pos_f.y()), e.tamaño.width(), e.tamaño.height());
@@ -137,7 +147,12 @@ void Level3Widget::spawnTrophy() {
     t.velocidad = QPointF(0, 150);
     t.tamaño = QSize(40, 24);
     t.usaSprite = true;
-    t.sprite = QPixmap(media.trofeo_sprite);
+    try {
+        t.sprite = media.getTrofeo();
+    } catch (const MediaLoadError &ex) {
+        qDebug() << "Level3: fallo sprite trofeo:" << ex.what();
+        t.sprite = QPixmap();
+    }
     t.spriteNormal = t.sprite;
     t.bounds = QRect(int(t.pos_f.x()), int(t.pos_f.y()), t.tamaño.width(), t.tamaño.height());
     trofeos.push_back(t);
@@ -224,11 +239,16 @@ void Level3Widget::onTick() {
                 // Reiniciar tamaño mínimo inmediato al respawn
                 e.tamaño = QSize(int(minH * aspect), int(minH));
                 e.bounds.setSize(e.tamaño);
-                // Cambiar sprite aleatoriamente en cada respawn (opcional)
-                switch (std::rand() % 3) {
-                    case 0: e.sprite = QPixmap(media.lvl3_carro1); break;
-                    case 1: e.sprite = QPixmap(media.lvl3_carro2); break;
-                    default: e.sprite = QPixmap(media.lvl3_carro3); break;
+                // Cambiar sprite aleatoriamente en cada respawn (opcional) con excepciones
+                try {
+                    switch (std::rand() % 3) {
+                        case 0: e.sprite = media.getCarro1(); break;
+                        case 1: e.sprite = media.getCarro2(); break;
+                        default: e.sprite = media.getCarro3(); break;
+                    }
+                } catch (const MediaLoadError &ex) {
+                    qDebug() << "Level3: fallo sprite auto (respawn):" << ex.what();
+                    e.sprite = QPixmap();
                 }
                 e.spriteNormal = e.sprite;
             }
@@ -340,9 +360,9 @@ void Level3Widget::checkCollisions() {
             e.bounds.setSize(e.tamaño);
             // Cambiar sprite aleatoriamente en cada respawn por choque (opcional)
             switch (std::rand() % 3) {
-                case 0: e.sprite = QPixmap(media.lvl3_carro1); break;
-                case 1: e.sprite = QPixmap(media.lvl3_carro2); break;
-                default: e.sprite = QPixmap(media.lvl3_carro3); break;
+                case 0: e.sprite = media.getCarro1(); break;
+                case 1: e.sprite = media.getCarro2(); break;
+                default: e.sprite = media.getCarro3(); break;
             }
             e.spriteNormal = e.sprite;
             e.bounds.moveTopLeft(QPoint(int(e.pos_f.x()), int(e.pos_f.y())));
@@ -482,8 +502,12 @@ void Level3Widget::paintEvent(QPaintEvent *) {
     if (mostrarGameOver || mostrarVictoria) {
         p.fillRect(rect(), QColor(0,0,0,160));
         QPixmap overlayImg;
-        if (mostrarGameOver) overlayImg.load(media.Gameover);
-        else overlayImg.load(media.victoriaImg);
+        try {
+            overlayImg = mostrarGameOver ? media.getGameOver() : media.getVictoria();
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level3: fallo overlay:" << ex.what();
+            overlayImg = QPixmap();
+        }
         if (!overlayImg.isNull()) {
             QSize targetSize(int(width()*0.7), int(height()*0.7));
             QPixmap scaled = overlayImg.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);

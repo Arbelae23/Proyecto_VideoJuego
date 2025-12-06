@@ -18,14 +18,12 @@ Level1Widget::Level1Widget(QWidget *parent)
 
     inter.contador_vidas = jugador.vidas;
     media.cargarMedia();
-    // Cargar imagen de fondo usando la ruta definida en Media
-    background.load(media.background_nivel);
-    // Cargar pantallas de Game Over y Victoria
-    if (!media.Gameover.isEmpty()) {
-        gameOverImg.load(media.Gameover);
-    }
-    if (!media.victoriaImg.isEmpty()) {
-        victoriaImg.load(media.victoriaImg);
+    // Cargar imagen de fondo (caché dinámico en Media)
+    try {
+        background = media.getBackgroundNivel1();
+    } catch (const MediaLoadError &ex) {
+        qDebug() << "Level1: fallo al cargar fondo:" << ex.what();
+        background = QPixmap();
     }
     // Inicializar temporización del nivel (igual a Nivel 2)
     tiempoRestante = tiempoLimite;
@@ -288,7 +286,13 @@ void Level1Widget::paintEvent(QPaintEvent *) {
         // Fondo semi-transparente
         p.fillRect(rect(), QColor(0,0,0,128));
         // Elegir imagen
-        QPixmap overlay = mostrarGameOver ? gameOverImg : victoriaImg;
+        QPixmap overlay;
+        try {
+            overlay = mostrarGameOver ? media.getGameOver() : media.getVictoria();
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level1: fallo overlay:" << ex.what();
+            overlay = QPixmap();
+        }
         if (!overlay.isNull()) {
             QSize targetSize = overlay.size();
             // Escalar si la imagen es muy grande

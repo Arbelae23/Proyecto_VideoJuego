@@ -4,10 +4,19 @@
 #include <QString>
 #include <QPixmap>
 #include <QPainter>
+#include <stdexcept>
+
+// Excepción para fallos de carga de recursos
+class MediaLoadError : public std::runtime_error {
+public:
+    explicit MediaLoadError(const std::string &msg)
+        : std::runtime_error(msg) {}
+};
 
 class Media {
 public:
     Media();
+    ~Media();
 
     QString victoriaImg;
     QString Gameover;
@@ -85,6 +94,28 @@ public:
     void setRoadSpeed(int pxPerSec);
     void drawScrollingRoad(QPainter &p, const QRect &area, double dt);
 
+    // Caché mínima con punteros dinámicos (new/delete)
+    const QPixmap& getCarro1();
+    const QPixmap& getCarro2();
+    const QPixmap& getCarro3();
+    const QPixmap& getTrofeo();
+    const QPixmap& getBackgroundNivel3();
+    const QPixmap& getGameOver();
+    const QPixmap& getVictoria();
+    const QPixmap& getBackgroundNivel1();
+    const QPixmap& getBackgroundNivel2();
+    // Nivel 2: enemigos
+    const QPixmap& getPoliciaW();
+    const QPixmap& getPoliciaS();
+    const QPixmap& getPoliciaA();
+    const QPixmap& getPoliciaD();
+    const QPixmap& getPoliciaWD();
+    const QPixmap& getPoliciaSD();
+    const QPixmap& getPoliciaSA();
+    const QPixmap& getPoliciaWA();
+    const QPixmap& getBicicleta();
+    const QPixmap& getChoque();
+
 private:
     QPixmap caminoPixmap;
     QPixmap caminoScaled;
@@ -93,6 +124,25 @@ private:
     double caminoOffsetY = 0.0;
     int caminoSpeedPxPerSec = 120; // velocidad por defecto (px/s)
     int caminoDirection = 1;       // 1 = hacia abajo, -1 = hacia arriba
+    // --- Caché mínima ---
+    QPixmap** l3CarPix = nullptr; // tamaño 3
+    QPixmap* trofeoPix = nullptr; // único
+    QPixmap* bg3Pix = nullptr;    // fondo nivel 3
+    QPixmap* gameOverPix = nullptr; // pantalla game over
+    QPixmap* victoriaPix = nullptr; // pantalla victoria
+    QPixmap* bg1Pix = nullptr;    // fondo nivel 1
+    QPixmap* bg2Pix = nullptr;    // fondo nivel 2
+    // Nivel 2: enemigos cache
+    QPixmap* poliWPix = nullptr;
+    QPixmap* poliSPix = nullptr;
+    QPixmap* poliAPix = nullptr;
+    QPixmap* poliDPix = nullptr;
+    QPixmap* poliWDPix = nullptr;
+    QPixmap* poliSDPix = nullptr;
+    QPixmap* poliSAPix = nullptr;
+    QPixmap* poliWAPix = nullptr;
+    QPixmap* biciPix = nullptr;
+    QPixmap* choquePix = nullptr;
     
 public:
     void setRoadDirectionDown(bool down) { caminoDirection = down ? 1 : -1; }

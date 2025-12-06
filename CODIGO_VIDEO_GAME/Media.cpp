@@ -130,3 +130,220 @@ void Media::drawScrollingRoad(QPainter &p, const QRect &area, double dt) {
         p.drawPixmap(targetBottom, caminoScaled, sourceBottom);
     }
 }
+
+// --- Caché mínima con punteros dinámicos ---
+Media::~Media() {
+    if (l3CarPix) {
+        for (int i = 0; i < 3; ++i) {
+            delete l3CarPix[i];
+        }
+        delete[] l3CarPix;
+        l3CarPix = nullptr;
+    }
+    delete trofeoPix;
+    trofeoPix = nullptr;
+    delete bg3Pix;
+    bg3Pix = nullptr;
+    delete gameOverPix;
+    gameOverPix = nullptr;
+    delete victoriaPix;
+    victoriaPix = nullptr;
+    delete bg1Pix;
+    bg1Pix = nullptr;
+    delete bg2Pix;
+    bg2Pix = nullptr;
+    // Nivel 2: enemigos
+    delete poliWPix; poliWPix = nullptr;
+    delete poliSPix; poliSPix = nullptr;
+    delete poliAPix; poliAPix = nullptr;
+    delete poliDPix; poliDPix = nullptr;
+    delete poliWDPix; poliWDPix = nullptr;
+    delete poliSDPix; poliSDPix = nullptr;
+    delete poliSAPix; poliSAPix = nullptr;
+    delete poliWAPix; poliWAPix = nullptr;
+    delete biciPix; biciPix = nullptr;
+    delete choquePix; choquePix = nullptr;
+}
+
+const QPixmap& Media::getCarro1() {
+    if (!l3CarPix) l3CarPix = new QPixmap*[3]{nullptr,nullptr,nullptr};
+    if (!l3CarPix[0]) {
+        l3CarPix[0] = new QPixmap();
+        if (!l3CarPix[0]->load(lvl3_carro1)) {
+            *l3CarPix[0] = QPixmap();
+            throw MediaLoadError("Failed to load lvl3_carro1");
+        }
+    }
+    return *l3CarPix[0];
+}
+
+const QPixmap& Media::getCarro2() {
+    if (!l3CarPix) l3CarPix = new QPixmap*[3]{nullptr,nullptr,nullptr};
+    if (!l3CarPix[1]) {
+        l3CarPix[1] = new QPixmap();
+        if (!l3CarPix[1]->load(lvl3_carro2)) {
+            *l3CarPix[1] = QPixmap();
+            throw MediaLoadError("Failed to load lvl3_carro2");
+        }
+    }
+    return *l3CarPix[1];
+}
+
+const QPixmap& Media::getCarro3() {
+    if (!l3CarPix) l3CarPix = new QPixmap*[3]{nullptr,nullptr,nullptr};
+    if (!l3CarPix[2]) {
+        l3CarPix[2] = new QPixmap();
+        if (!l3CarPix[2]->load(lvl3_carro3)) {
+            *l3CarPix[2] = QPixmap();
+            throw MediaLoadError("Failed to load lvl3_carro3");
+        }
+    }
+    return *l3CarPix[2];
+}
+
+const QPixmap& Media::getTrofeo() {
+    if (!trofeoPix) {
+        trofeoPix = new QPixmap();
+        if (!trofeoPix->load(trofeo_sprite)) {
+            *trofeoPix = QPixmap();
+            throw MediaLoadError("Failed to load trofeo_sprite");
+        }
+    }
+    return *trofeoPix;
+}
+
+const QPixmap& Media::getBackgroundNivel3() {
+    if (!bg3Pix) {
+        bg3Pix = new QPixmap();
+        if (!bg3Pix->load(background_nivel3)) {
+            *bg3Pix = QPixmap();
+            throw MediaLoadError("Failed to load background_nivel3");
+        }
+    }
+    return *bg3Pix;
+}
+
+const QPixmap& Media::getGameOver() {
+    if (!gameOverPix) {
+        gameOverPix = new QPixmap();
+        if (!gameOverPix->load(Gameover)) {
+            *gameOverPix = QPixmap();
+            throw MediaLoadError("Failed to load Gameover");
+        }
+    }
+    return *gameOverPix;
+}
+
+const QPixmap& Media::getVictoria() {
+    if (!victoriaPix) {
+        victoriaPix = new QPixmap();
+        if (!victoriaPix->load(victoriaImg)) {
+            *victoriaPix = QPixmap();
+            throw MediaLoadError("Failed to load victoriaImg");
+        }
+    }
+    return *victoriaPix;
+}
+
+const QPixmap& Media::getBackgroundNivel1() {
+    if (!bg1Pix) {
+        bg1Pix = new QPixmap();
+        if (!bg1Pix->load(background_nivel)) {
+            *bg1Pix = QPixmap();
+            throw MediaLoadError("Failed to load background_nivel1");
+        }
+    }
+    return *bg1Pix;
+}
+
+const QPixmap& Media::getBackgroundNivel2() {
+    if (!bg2Pix) {
+        bg2Pix = new QPixmap();
+        if (!bg2Pix->load(background_nivel2)) {
+            *bg2Pix = QPixmap();
+            throw MediaLoadError("Failed to load background_nivel2");
+        }
+    }
+    return *bg2Pix;
+}
+
+// --- Nivel 2: enemigos ---
+const QPixmap& Media::getPoliciaW() {
+    if (!poliWPix) {
+        poliWPix = new QPixmap();
+        if (!poliWPix->load(policia_sprite)) { *poliWPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite W"); }
+    }
+    return *poliWPix;
+}
+
+const QPixmap& Media::getPoliciaS() {
+    if (!poliSPix) {
+        poliSPix = new QPixmap();
+        if (!poliSPix->load(policia_sprite_S)) { *poliSPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite S"); }
+    }
+    return *poliSPix;
+}
+
+const QPixmap& Media::getPoliciaA() {
+    if (!poliAPix) {
+        poliAPix = new QPixmap();
+        if (!poliAPix->load(policia_sprite_A)) { *poliAPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite A"); }
+    }
+    return *poliAPix;
+}
+
+const QPixmap& Media::getPoliciaD() {
+    if (!poliDPix) {
+        poliDPix = new QPixmap();
+        if (!poliDPix->load(policia_sprite_D)) { *poliDPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite D"); }
+    }
+    return *poliDPix;
+}
+
+const QPixmap& Media::getPoliciaWD() {
+    if (!poliWDPix) {
+        poliWDPix = new QPixmap();
+        if (!poliWDPix->load(policia_sprite_WD)) { *poliWDPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite WD"); }
+    }
+    return *poliWDPix;
+}
+
+const QPixmap& Media::getPoliciaSD() {
+    if (!poliSDPix) {
+        poliSDPix = new QPixmap();
+        if (!poliSDPix->load(policia_sprite_SD)) { *poliSDPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite SD"); }
+    }
+    return *poliSDPix;
+}
+
+const QPixmap& Media::getPoliciaSA() {
+    if (!poliSAPix) {
+        poliSAPix = new QPixmap();
+        if (!poliSAPix->load(policia_sprite_SA)) { *poliSAPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite SA"); }
+    }
+    return *poliSAPix;
+}
+
+const QPixmap& Media::getPoliciaWA() {
+    if (!poliWAPix) {
+        poliWAPix = new QPixmap();
+        if (!poliWAPix->load(policia_sprite_WA)) { *poliWAPix = QPixmap(); throw MediaLoadError("Failed to load policia_sprite WA"); }
+    }
+    return *poliWAPix;
+}
+
+const QPixmap& Media::getBicicleta() {
+    if (!biciPix) {
+        biciPix = new QPixmap();
+        if (!biciPix->load(bicicleta_sprite)) { *biciPix = QPixmap(); throw MediaLoadError("Failed to load bicicleta_sprite"); }
+    }
+    return *biciPix;
+}
+
+const QPixmap& Media::getChoque() {
+    if (!choquePix) {
+        choquePix = new QPixmap();
+        if (!choquePix->load(Choque)) { *choquePix = QPixmap(); throw MediaLoadError("Failed to load Choque sprite"); }
+    }
+    return *choquePix;
+}
