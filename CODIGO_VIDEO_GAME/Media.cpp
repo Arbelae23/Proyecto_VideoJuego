@@ -37,12 +37,18 @@ void Media::cargarMedia() {
     //Sprites enemigos nivel 2
 
     policia_sprite = ":/sprite/sprite/Poli_W.png";
+    policia_sprite_S = ":/sprite/sprite/Poli_S.png";
     bicicleta_sprite = ":/sprite/sprite/Bici.png";
 
     //Sprites choque
 
     Choque = ":/sprite/sprite/Choque.png";
     Gameover = ":/Backgraund/Backgraund/gameover.gif";
+
+
+    //Sprite trofeo
+
+    trofeo_sprite = ":/sprite/sprite/Trofeo.png";
 
 
     // Sonidos (cuando los tengas)

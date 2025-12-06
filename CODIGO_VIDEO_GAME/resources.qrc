@@ -36,5 +36,6 @@
         <file>sprite/Poli_WD.png</file>
         <file>sprite/Bici.png</file>
         <file>sprite/Choque.png</file>
+        <file>sprite/Trofeo.png</file>
     </qresource>
 </RCC>

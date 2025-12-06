@@ -55,6 +55,16 @@ public:
     QPixmap spriteNormal;
     QPixmap spriteChoque;
 
+    //Sprite enemigos rebote
+
+    QPixmap spriteNormalDerecha;
+    QPixmap spriteNormalIzquierda;
+    bool mirandoDerecha = true;
+
+    QPixmap spriteNormalArriba;
+    QPixmap spriteNormalAbajo;
+    bool mirandoArriba = true;
+
 
 
     // Funciones

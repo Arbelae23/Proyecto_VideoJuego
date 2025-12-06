@@ -44,12 +44,17 @@ public:
 
     //Sprites enemigo policia nivel 2
     QString policia_sprite;
+    QString policia_sprite_S;
 
     //Sprites enemigo bicicleta nivel 2
     QString bicicleta_sprite;
 
     // choque enemigos
     QString Choque;
+
+    //sprite trofeo
+
+    QString trofeo_sprite;
 
     void cargarMedia();
     void reproducir_cancionNivel(int nivel);

@@ -19,14 +19,59 @@ void Enemigos::update(double dt, int width, int height) {
 
         if (tiempoChoque >= 0.4)
         {
-            sprite = spriteNormal;
+            // terminar choque
+            enChoque = false;
+            tiempoChoque = 0.0;
+
+            // Restaurar sprite según lo que exista, en prioridad:
+            // 1) vertical (arriba/abajo) si están cargados
+            // 2) horizontal (derecha/izquierda) si están cargados
+            // 3) spriteNormal simple
+            // 4) dejar spriteChoque si nada más (defensa)
+            if (!spriteNormalArriba.isNull() || !spriteNormalAbajo.isNull())
+            {
+                // si sabemos si estaba mirando arriba/abajo (mirandoArriba)
+                if (mirandoArriba && !spriteNormalArriba.isNull())
+                    sprite = spriteNormalArriba;
+                else if (!mirandoArriba && !spriteNormalAbajo.isNull())
+                    sprite = spriteNormalAbajo;
+                else if (!spriteNormalArriba.isNull())
+                    sprite = spriteNormalArriba;
+                else
+                    sprite = spriteNormalAbajo;
+            }
+            else if (!spriteNormalDerecha.isNull() || !spriteNormalIzquierda.isNull())
+            {
+                if (mirandoDerecha && !spriteNormalDerecha.isNull())
+                    sprite = spriteNormalDerecha;
+                else if (!mirandoDerecha && !spriteNormalIzquierda.isNull())
+                    sprite = spriteNormalIzquierda;
+                else if (!spriteNormalDerecha.isNull())
+                    sprite = spriteNormalDerecha;
+                else
+                    sprite = spriteNormalIzquierda;
+            }
+            else if (!spriteNormal.isNull())
+            {
+                sprite = spriteNormal;
+            }
+            else
+            {
+                // respaldo: si todo está vacío, no cambiar (mantener spriteChoque) o asignar spriteChoque para evitar círculo
+                // aquí dejamos sprite = spriteChoque para evitar fallback vacío
+                sprite = spriteChoque;
+            }
+
+            // opcional: resetear posición si quieres (tu código hacía pos_inicial)
             pos_base = pos_inicial;
             pos_f = pos_inicial;
             bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
-            enChoque = false;
         }
+
+        // Mientras estaba en choque no procesamos movimiento normal
         return;
     }
+
 
     if (!activo) return;
 
@@ -34,10 +79,46 @@ void Enemigos::update(double dt, int width, int height) {
     pos_base += velocidad * dt;
 
     // ---- Rebote elástico perfecto ----
-    if (pos_base.x() < 0) { pos_base.setX(0); velocidad.setX(fabs(velocidad.x())); }
-    if (pos_base.x() + tamaño.width() > width) { pos_base.setX(width - tamaño.width()); velocidad.setX(-fabs(velocidad.x())); }
-    if (pos_base.y() < 0) { pos_base.setY(0); velocidad.setY(fabs(velocidad.y())); }
-    if (pos_base.y() + tamaño.height() > height) { pos_base.setY(height - tamaño.height()); velocidad.setY(-fabs(velocidad.y())); }
+    if (pos_base.x() < 0) {
+        pos_base.setX(0);
+        velocidad.setX(fabs(velocidad.x()));
+
+        // ✅ MIRAR A LA DERECHA
+        mirandoDerecha = true;
+
+        if (!spriteNormal.isNull())
+            sprite = spriteNormal;
+    }
+
+    if (pos_base.x() + tamaño.width() > width) {
+        pos_base.setX(width - tamaño.width());
+        velocidad.setX(-fabs(velocidad.x()));
+
+        // ✅ MIRAR A LA IZQUIERDA (ESPEJO)
+        mirandoDerecha = false;
+        sprite = spriteNormalIzquierda;
+    }
+
+    // REBOTE SUPERIOR → BAJA
+    if (pos_base.y() < 0)
+    {
+        pos_base.setY(0);
+        velocidad.setY(fabs(velocidad.y()));   // ahora baja
+
+        sprite = spriteNormalAbajo;            //  mirar abajo
+        mirandoArriba = false;
+    }
+
+    // REBOTE INFERIOR → SUBE
+    if (pos_base.y() + tamaño.height() > height)
+    {
+        pos_base.setY(height - tamaño.height());
+        velocidad.setY(-fabs(velocidad.y()));  // ahora sube
+
+        sprite = spriteNormalArriba;           //  mirar arriba
+        mirandoArriba = true;
+    }
+
 
     // ---- Movimientos especiales ----
     switch (tipo_movimiento) {
@@ -102,7 +183,9 @@ void Enemigos::activarChoque()
 
 void Enemigos::desactivarChoque()
 {
-    sprite = spriteNormal;
+    // 🔥 Volver al sprite correcto según dirección
+    sprite = mirandoDerecha ? spriteNormalDerecha : spriteNormalIzquierda;
+
     activo = false;   // ahora sí se elimina
     enChoque = false;
 }
