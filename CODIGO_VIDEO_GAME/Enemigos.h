@@ -16,7 +16,8 @@ public:
         TM_Linear,
         TM_SenoDown,
         TM_Espiral,
-        TM_EspiralHorizontal
+        TM_EspiralHorizontal,
+        TM_Inteligente,
     };
 
     // Variables básicas
@@ -29,6 +30,9 @@ public:
     QSize tamaño;
     QRect bounds;
     TipoMovimiento tipo_movimiento = TM_Linear;
+    QPointF velocidadOriginal;
+    double cooldownGolpe = 0.8;
+    double tiempoCooldown = 0.0;
 
 
     // colisiones
@@ -36,6 +40,7 @@ public:
     double tiempoChoque = 0.0;
     void activarChoque();
     void desactivarChoque();
+
 
     // Movimiento sinusoidal
     double tiempo_sen = 0.0;
@@ -55,6 +60,16 @@ public:
     QPixmap spriteNormal;
     QPixmap spriteChoque;
 
+    //Sprite enemigos rebote
+
+    QPixmap spriteNormalDerecha;
+    QPixmap spriteNormalIzquierda;
+    bool mirandoDerecha = true;
+
+    QPixmap spriteNormalArriba;
+    QPixmap spriteNormalAbajo;
+    bool mirandoArriba = true;
+
 
 
     // Funciones
@@ -63,6 +78,16 @@ public:
 
     // Mantener compatibilidad con tu código antiguo
     QRect getBounds() const { return bounds; }
+
+
+
+    // --- IA ---
+    QPointF objetivo;
+    bool persiguiendo = false;
+    double radioVision = 250;     // distancia para detectar al jugador
+    double radioPerdida = 330;    // distancia para dejar de seguir
+    bool yaGolpeo = false;
+
 };
 
 #endif

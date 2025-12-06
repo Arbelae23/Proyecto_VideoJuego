@@ -8,6 +8,12 @@
 Level2Widget::Level2Widget(QWidget *parent)
     : QWidget(parent), dt(0.016), t_global(0)
 {
+
+    timerTrofeos = new QTimer(this);
+    connect(timerTrofeos, &QTimer::timeout, this, &Level2Widget::spawnTrofeo);
+    timerTrofeos->start(5000);   // Cada 5 segundos
+
+
     mostrarGameOver = false;
     esperandoDecision = false;
     enemigosCreados = false;
@@ -15,6 +21,7 @@ Level2Widget::Level2Widget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
     gameOverImg.load(media.Gameover);
+    victoriaImg.load(media.victoriaImg);
 
     // cargar media primero (IMPORTANTE)
     media.cargarMedia();
@@ -78,6 +85,8 @@ void Level2Widget::setupEnemies()
         // ✅ VELOCIDADES DISTINTAS
         e.velocidad = QPointF(0, 100 + i * 40 + rand() % 30);
 
+        e.velocidadOriginal = e.velocidad;
+
         // ✅ SENO DISTINTO PARA CADA UNO
         e.amplitud_seno = 50 + i * 15;
         e.frecuencia_seno = 1.5 + (i * 0.4);
@@ -91,10 +100,16 @@ void Level2Widget::setupEnemies()
 
         // ✅ SPRITE
         if (!media.policia_sprite.isEmpty()) {
-            e.spriteNormal.load(media.policia_sprite);
-            e.sprite = e.spriteNormal;
+            e.spriteNormalArriba.load(media.policia_sprite);
+            e.spriteNormalAbajo.load(media.policia_sprite_S);
+
+
+            e.sprite = e.spriteNormalAbajo;  // EMPIEZA MIRANDO ABAJO
+            e.spriteNormal = e.spriteNormalAbajo;
+            e.mirandoArriba = false;
             e.usaSprite = true;
         }
+
 
         if (!media.Choque.isEmpty()) {
             e.spriteChoque.load(media.Choque);
@@ -104,6 +119,8 @@ void Level2Widget::setupEnemies()
         e.pos_inicial = e.pos_base;
         e.pos_f = e.pos_base;
         enemigos.push_back(e);
+
+
     }
 
 
@@ -143,7 +160,10 @@ void Level2Widget::setupEnemies()
         // ✅ Sprite de la bicicleta
         if (!media.bicicleta_sprite.isEmpty()) {
             e.spriteNormal.load(media.bicicleta_sprite);
+            e.spriteNormalIzquierda = e.spriteNormal.transformed(
+                QTransform().scale(-1, 1));  // espejo
             e.sprite = e.spriteNormal;
+            e.mirandoDerecha = true;
             e.usaSprite = true;
         }
 
@@ -153,8 +173,50 @@ void Level2Widget::setupEnemies()
 
         e.pos_inicial = e.pos_base;
         e.pos_f = e.pos_base;
+
+        e.velocidadOriginal = e.velocidad;
         enemigos.push_back(e);
     }
+
+
+
+    //  ENEMIGO INTELIGENTE
+    Enemigos bot;
+    bot.activo = true;
+    bot.tipo_movimiento = Enemigos::TM_Inteligente;
+
+    bot.tamaño = QSize(100, 80);
+    bot.pos_base = QPointF(width()/2, height()/2);
+    bot.pos_f = bot.pos_base;
+    bot.velocidad = QPointF(140, 0);
+    bot.velocidadOriginal = bot.velocidad;
+    bot.radioVision = 250;
+    bot.radioPerdida = 320;
+
+    bot.bounds = QRect(
+        int(bot.pos_f.x()),
+        int(bot.pos_f.y()),
+        bot.tamaño.width(),
+        bot.tamaño.height()
+        );
+
+    // sprite
+    if (!media.IA.isEmpty())   // SPRITE "IA"
+    {
+        bot.spriteNormal.load(media.IA);
+        bot.sprite = bot.spriteNormal;
+        bot.usaSprite = true;     // OBLIGATORIO PARA EVITAR EL CÍRCULO ROJO
+    }
+
+    if (!media.Choque.isEmpty())
+    {
+        bot.spriteChoque.load(media.Choque);
+    }
+
+
+
+
+    enemigos.push_back(bot);
 
 }
 
@@ -262,6 +324,26 @@ void Level2Widget::moverJugadorWASD()
 
 void Level2Widget::onTick()
 {
+
+
+
+    // ⏱️ TIEMPO
+    tiempoRestante -= dt;
+
+    if (tiempoRestante <= 0 && !nivelGanado)
+    {
+        mostrarGameOver = true;
+        esperandoDecision = true;
+
+        for (auto &e : enemigos)
+            e.activo = false;
+
+        timer.stop();
+        update();   // ✅ fuerza el dibujado del Game Over
+        return;
+    }
+
+
     moverJugadorWASD();
 
     // --- ANIMACIÓN SUAVE DE SPRITES (circular 0..7) ---
@@ -285,9 +367,19 @@ void Level2Widget::onTick()
         animAccumulatorMs = 0;
     }
 
+
+    for (auto &e : enemigos)
+    {
+        if (e.tipo_movimiento == Enemigos::TM_Inteligente)
+            e.objetivo = jugador.rect.center();
+    }
+
     // ✅ ACTUALIZAR ENEMIGOS
     for (auto &e : enemigos)
         e.update(dt, width(), height());
+
+    for (auto &t : trofeos)
+        t.update(dt);
 
     // ✅ DETECTAR COLISIONES
     checkCollisions();
@@ -316,17 +408,20 @@ void Level2Widget::checkCollisions()
 
     for (auto &e : enemigos)
     {
-        if (!e.activo || e.enChoque)
+        if (!e.activo || e.enChoque || e.tiempoCooldown > 0.0)
             continue;
 
         if (jugador.getBounds().intersects(e.bounds))
         {
+            e.yaGolpeo = true;   // ✅ ya causó daño
+
             inter.quitar_vida(1);
             jugador.vidas = inter.contador_vidas;
 
             // ✅ Activar choque
             e.enChoque = true;
             e.tiempoChoque = 0.0;
+            e.velocidad = QPointF(0,0);
 
             if (!e.spriteChoque.isNull())
                 e.sprite = e.spriteChoque;
@@ -346,6 +441,33 @@ void Level2Widget::checkCollisions()
             }
         }
     }
+
+    // COLISIÓN CON TROFEOS
+    for (auto &t : trofeos)
+    {
+        if (t.activo && jugador.getBounds().intersects(t.bounds))
+        {
+            t.desaparecer();
+            trofeosRecolectados++;   // ✅ CONTAR
+        }
+    }
+
+    if (trofeosRecolectados >= totalTrofeosObjetivo)
+    {
+        nivelGanado = true;
+        mostrarVictoria = true;     // ✅ ahora sí muestra victoria
+        esperandoDecision = true;
+
+        // detener enemigos
+        for (auto &en : enemigos)
+            en.activo = false;
+
+        timer.stop();
+        update();
+    }
+
+
+
 }
 
 
@@ -363,6 +485,29 @@ void Level2Widget::paintEvent(QPaintEvent *)
         p.fillRect(rect(), QColor(240,240,240));
     }
 
+
+    //  SI GANÓ, MOSTRAR PANTALLA DE VICTORIA
+    if (mostrarVictoria)
+    {
+        if (!victoriaImg.isNull())
+            p.drawPixmap(rect(), victoriaImg, victoriaImg.rect());
+
+        p.setPen(Qt::white);
+        p.setFont(QFont("Arial", 18, QFont::Bold));
+
+        QString texto = "¡HAS GANADO!  (N) Volver al menu";
+        p.drawText(0, height() - 250, width(), 30,
+                   Qt::AlignCenter, texto);
+
+        return;   // NO DIBUJAR NADA MÁS
+    }
+
+
+
+
+
+
+
     // 🔥 SI HAY GAME OVER, SOLO DIBUJAR ESO
     if (mostrarGameOver)
     {
@@ -377,10 +522,12 @@ void Level2Widget::paintEvent(QPaintEvent *)
         p.drawText(0, height() - 250, width(), 30,
                    Qt::AlignCenter, texto);
 
-        return;
+        return;   // ⛔ IMPORTANTE: no dibuja nada más
     }
 
-
+    // ✅ DIBUJAR TROFEOS (ANTES DE ENEMIGOS Y JUGADOR)
+    for (auto &t : trofeos)
+        t.draw(p);
 
     // AJUSTE DE POSICIÓN DEL JUGADOR
     if (jugador.rect.top() == 100) {
@@ -397,7 +544,13 @@ void Level2Widget::paintEvent(QPaintEvent *)
 
     // HUD
     p.setPen(Qt::black);
-    p.drawText(10,20, QString("Vidas: %1").arg(jugador.vidas));
+    p.drawText(10, 20, QString("Vidas: %1").arg(jugador.vidas));
+
+    p.drawText(10, 40, QString("Tiempo: %1").arg((int)tiempoRestante));
+    p.drawText(10, 60, QString("Trofeos: %1 / %2")
+                           .arg(trofeosRecolectados)
+                           .arg(totalTrofeosObjetivo));
+
 }
 
 
@@ -422,8 +575,10 @@ void Level2Widget::updatePlayerSkin()
 
 void Level2Widget::reiniciarNivel2()
 {
+    mostrarVictoria = false;
     mostrarGameOver = false;
     esperandoDecision = false;
+    nivelGanado = false;
 
     inter.contador_vidas = 3;
     jugador.vidas = 3;
@@ -434,7 +589,36 @@ void Level2Widget::reiniciarNivel2()
     enemigosCreados = false;
     setupEnemies();
 
-    timer.start(int(dt * 1000));   // ✅ MUY IMPORTANTE
+    trofeos.clear();
+    trofeosRecolectados = 0;
 
+    tiempoRestante = tiempoLimite;
+
+    timer.start(int(dt * 1000));
     update();
 }
+
+
+
+void Level2Widget::spawnTrofeo()
+{
+    if (mostrarGameOver || nivelGanado) return;
+
+    Objeto_Interactivo t;
+
+    int x = rand() % (width() - 40);
+    int y = rand() % (height() - 40);
+
+    t.aparecer(QPoint(x, y));
+    t.tamaño = QSize(80, 80);   // trofeo más grande
+    t.bounds = QRect(t.spawn_xy, t.tamaño);
+    t.tiempo_pantalla = 5.0;
+
+    // ASIGNAR SPRITE DEL TROFEO
+    if (!media.trofeo_sprite.isEmpty())
+        t.sprite.load(media.trofeo_sprite);
+
+    trofeos.push_back(t);
+}
+
+
