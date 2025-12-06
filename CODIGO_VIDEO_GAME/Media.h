@@ -9,12 +9,14 @@ class Media {
 public:
     Media();
 
+    QString victoriaImg;
     QString Gameover;
     QString cancion_nivel;
     QString background_nivel;
     QString background_nivel2;
     QString background_nivel3;
     QString jugador1_sprite;
+
     // Imagen de carretera para scroll en Nivel 1
     QString camino;
 
@@ -53,8 +55,10 @@ public:
     QString Choque;
 
     //sprite trofeo
-
     QString trofeo_sprite;
+
+    //Sprite IA
+    QString IA;
 
     void cargarMedia();
     void reproducir_cancionNivel(int nivel);

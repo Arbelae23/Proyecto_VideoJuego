@@ -21,6 +21,7 @@ Level2Widget::Level2Widget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
     gameOverImg.load(media.Gameover);
+    victoriaImg.load(media.victoriaImg);
 
     // cargar media primero (IMPORTANTE)
     media.cargarMedia();
@@ -83,6 +84,8 @@ void Level2Widget::setupEnemies()
 
         // ✅ VELOCIDADES DISTINTAS
         e.velocidad = QPointF(0, 100 + i * 40 + rand() % 30);
+
+        e.velocidadOriginal = e.velocidad;
 
         // ✅ SENO DISTINTO PARA CADA UNO
         e.amplitud_seno = 50 + i * 15;
@@ -170,8 +173,50 @@ void Level2Widget::setupEnemies()
 
         e.pos_inicial = e.pos_base;
         e.pos_f = e.pos_base;
+
+        e.velocidadOriginal = e.velocidad;
         enemigos.push_back(e);
     }
+
+
+
+    //  ENEMIGO INTELIGENTE
+    Enemigos bot;
+    bot.activo = true;
+    bot.tipo_movimiento = Enemigos::TM_Inteligente;
+
+    bot.tamaño = QSize(100, 80);
+    bot.pos_base = QPointF(width()/2, height()/2);
+    bot.pos_f = bot.pos_base;
+    bot.velocidad = QPointF(140, 0);
+    bot.velocidadOriginal = bot.velocidad;
+    bot.radioVision = 250;
+    bot.radioPerdida = 320;
+
+    bot.bounds = QRect(
+        int(bot.pos_f.x()),
+        int(bot.pos_f.y()),
+        bot.tamaño.width(),
+        bot.tamaño.height()
+        );
+
+    // sprite
+    if (!media.IA.isEmpty())   // SPRITE "IA"
+    {
+        bot.spriteNormal.load(media.IA);
+        bot.sprite = bot.spriteNormal;
+        bot.usaSprite = true;     // OBLIGATORIO PARA EVITAR EL CÍRCULO ROJO
+    }
+
+    if (!media.Choque.isEmpty())
+    {
+        bot.spriteChoque.load(media.Choque);
+    }
+
+
+
+
+    enemigos.push_back(bot);
 
 }
 
@@ -322,6 +367,13 @@ void Level2Widget::onTick()
         animAccumulatorMs = 0;
     }
 
+
+    for (auto &e : enemigos)
+    {
+        if (e.tipo_movimiento == Enemigos::TM_Inteligente)
+            e.objetivo = jugador.rect.center();
+    }
+
     // ✅ ACTUALIZAR ENEMIGOS
     for (auto &e : enemigos)
         e.update(dt, width(), height());
@@ -356,17 +408,20 @@ void Level2Widget::checkCollisions()
 
     for (auto &e : enemigos)
     {
-        if (!e.activo || e.enChoque)
+        if (!e.activo || e.enChoque || e.tiempoCooldown > 0.0)
             continue;
 
         if (jugador.getBounds().intersects(e.bounds))
         {
+            e.yaGolpeo = true;   // ✅ ya causó daño
+
             inter.quitar_vida(1);
             jugador.vidas = inter.contador_vidas;
 
             // ✅ Activar choque
             e.enChoque = true;
             e.tiempoChoque = 0.0;
+            e.velocidad = QPointF(0,0);
 
             if (!e.spriteChoque.isNull())
                 e.sprite = e.spriteChoque;
@@ -397,24 +452,20 @@ void Level2Widget::checkCollisions()
         }
     }
 
-    // ✅ ¿GANÓ EL NIVEL?
-    bool todosRecogidos = true;
-    for (auto &t : trofeos)
-    {
-        if (t.activo)
-        {
-            todosRecogidos = false;
-            break;
-        }
-    }
-
     if (trofeosRecolectados >= totalTrofeosObjetivo)
     {
         nivelGanado = true;
-        timer.stop();
-        mostrarGameOver = true;
+        mostrarVictoria = true;     // ✅ ahora sí muestra victoria
         esperandoDecision = true;
+
+        // detener enemigos
+        for (auto &en : enemigos)
+            en.activo = false;
+
+        timer.stop();
+        update();
     }
+
 
 
 }
@@ -433,6 +484,29 @@ void Level2Widget::paintEvent(QPaintEvent *)
     } else {
         p.fillRect(rect(), QColor(240,240,240));
     }
+
+
+    //  SI GANÓ, MOSTRAR PANTALLA DE VICTORIA
+    if (mostrarVictoria)
+    {
+        if (!victoriaImg.isNull())
+            p.drawPixmap(rect(), victoriaImg, victoriaImg.rect());
+
+        p.setPen(Qt::white);
+        p.setFont(QFont("Arial", 18, QFont::Bold));
+
+        QString texto = "¡HAS GANADO!  (N) Volver al menu";
+        p.drawText(0, height() - 250, width(), 30,
+                   Qt::AlignCenter, texto);
+
+        return;   // NO DIBUJAR NADA MÁS
+    }
+
+
+
+
+
+
 
     // 🔥 SI HAY GAME OVER, SOLO DIBUJAR ESO
     if (mostrarGameOver)
@@ -501,6 +575,7 @@ void Level2Widget::updatePlayerSkin()
 
 void Level2Widget::reiniciarNivel2()
 {
+    mostrarVictoria = false;
     mostrarGameOver = false;
     esperandoDecision = false;
     nivelGanado = false;

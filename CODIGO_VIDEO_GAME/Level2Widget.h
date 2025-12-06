@@ -75,11 +75,15 @@ private:
     int animStepMs = 80;
 
     // =========================
-    // GAME OVER
+    // GAME OVER / VICTORIA
     // =========================
     bool mostrarGameOver = false;
+    bool mostrarVictoria = false;
+    bool nivelGanado = false;
     bool esperandoDecision = false;
+
     QPixmap gameOverImg;
+    QPixmap victoriaImg;
 
     // =========================
     // TROFEOS ✅ (ARREGLADO)
@@ -90,7 +94,7 @@ private:
     double tiempoTrofeoVida = 5.0;    // dura 5 segundos
     int totalTrofeosObjetivo = 5;     // los que debes recoger para ganar
     int trofeosRecolectados = 0;
-    bool nivelGanado = false;
+
 
     void spawnTrofeo();               // ✅ GENERADOR
 

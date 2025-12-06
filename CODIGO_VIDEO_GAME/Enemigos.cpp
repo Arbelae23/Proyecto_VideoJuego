@@ -17,60 +17,66 @@ void Enemigos::update(double dt, int width, int height) {
     {
         tiempoChoque += dt;
 
+        // mantenerlo quieto solo durante la animación de choque
+        pos_f += QPointF(0, 0);
+
         if (tiempoChoque >= 0.4)
         {
-            // terminar choque
             enChoque = false;
             tiempoChoque = 0.0;
 
-            // Restaurar sprite según lo que exista, en prioridad:
-            // 1) vertical (arriba/abajo) si están cargados
-            // 2) horizontal (derecha/izquierda) si están cargados
-            // 3) spriteNormal simple
-            // 4) dejar spriteChoque si nada más (defensa)
-            if (!spriteNormalArriba.isNull() || !spriteNormalAbajo.isNull())
-            {
-                // si sabemos si estaba mirando arriba/abajo (mirandoArriba)
-                if (mirandoArriba && !spriteNormalArriba.isNull())
-                    sprite = spriteNormalArriba;
-                else if (!mirandoArriba && !spriteNormalAbajo.isNull())
-                    sprite = spriteNormalAbajo;
-                else if (!spriteNormalArriba.isNull())
-                    sprite = spriteNormalArriba;
-                else
-                    sprite = spriteNormalAbajo;
-            }
-            else if (!spriteNormalDerecha.isNull() || !spriteNormalIzquierda.isNull())
-            {
-                if (mirandoDerecha && !spriteNormalDerecha.isNull())
-                    sprite = spriteNormalDerecha;
-                else if (!mirandoDerecha && !spriteNormalIzquierda.isNull())
-                    sprite = spriteNormalIzquierda;
-                else if (!spriteNormalDerecha.isNull())
-                    sprite = spriteNormalDerecha;
-                else
-                    sprite = spriteNormalIzquierda;
-            }
-            else if (!spriteNormal.isNull())
-            {
+            QPointF dir = pos_f - pos_inicial;
+            double mag = std::sqrt(dir.x()*dir.x() + dir.y()*dir.y());
+            if (mag != 0) dir /= mag;
+
+            velocidad = velocidadOriginal;
+
+            tiempoCooldown = cooldownGolpe;
+            yaGolpeo = true;
+
+            // Restaurar sprite normal
+            if (!spriteNormal.isNull())
                 sprite = spriteNormal;
+
+            if (tipo_movimiento == TM_EspiralHorizontal)
+            {
+                // Bicicleta: empuje fuerte, pero no reiniciamos animación
+                pos_f += dir * 180;      // empuje visual
+                pos_base += dir * 180;   // mueve la base real
+            }
+            else if (tipo_movimiento == TM_Inteligente)
+            {
+                // IA: empuje normal, y actualizar base y pos_f
+                pos_f += dir * 120;
+                pos_base = pos_f;
+                // no reiniciar tiempo_sen ni angulo
             }
             else
             {
-                // respaldo: si todo está vacío, no cambiar (mantener spriteChoque) o asignar spriteChoque para evitar círculo
-                // aquí dejamos sprite = spriteChoque para evitar fallback vacío
-                sprite = spriteChoque;
+                // Policías y otros enemigos
+                pos_f += dir * 120;
+                pos_base = pos_f;
+                tiempo_sen = 0;
+                angulo = 0;
+                radio_actual = 0;
             }
-
-            // opcional: resetear posición si quieres (tu código hacía pos_inicial)
-            pos_base = pos_inicial;
-            pos_f = pos_inicial;
-            bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
         }
 
-        // Mientras estaba en choque no procesamos movimiento normal
+        bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
         return;
     }
+
+
+    if (tiempoCooldown > 0.0)
+    {
+        tiempoCooldown -= dt;
+        yaGolpeo = true;   // aún no puede volver a dañar
+    }
+    else
+    {
+        yaGolpeo = false; // ya puede volver a dañar
+    }
+
 
 
     if (!activo) return;
@@ -93,10 +99,15 @@ void Enemigos::update(double dt, int width, int height) {
     if (pos_base.x() + tamaño.width() > width) {
         pos_base.setX(width - tamaño.width());
         velocidad.setX(-fabs(velocidad.x()));
-
-        // ✅ MIRAR A LA IZQUIERDA (ESPEJO)
         mirandoDerecha = false;
-        sprite = spriteNormalIzquierda;
+
+        if (tipo_movimiento == TM_Inteligente) {
+            // IA: siempre spriteNormal
+            if (!spriteNormal.isNull()) sprite = spriteNormal;
+        } else {
+            // Otros enemigos: espejo
+            if (!spriteNormalIzquierda.isNull()) sprite = spriteNormalIzquierda;
+        }
     }
 
     // REBOTE SUPERIOR → BAJA
@@ -117,6 +128,39 @@ void Enemigos::update(double dt, int width, int height) {
 
         sprite = spriteNormalArriba;           //  mirar arriba
         mirandoArriba = true;
+    }
+
+
+    if (tipo_movimiento == TM_Inteligente && activo)
+    {
+        QPointF jugadorPos = objetivo;
+
+        // vector hacia el jugador
+        QPointF dir = jugadorPos - pos_f;
+        double distancia = std::sqrt(dir.x()*dir.x() + dir.y()*dir.y());
+
+        // 👁️ DETECTAR JUGADOR
+        if (distancia < radioVision)
+            persiguiendo = true;
+        else if (distancia > radioPerdida)
+            persiguiendo = false;
+
+        // 🧠 MOVIMIENTO
+        if (persiguiendo)
+        {
+            dir /= distancia; // normalizar
+            pos_f += dir * velocidad.x() * dt;
+        }
+        else
+        {
+            // patrulla cuando no ve al jugador
+            pos_f += velocidad * dt;
+
+            if (pos_f.x() < 50 || pos_f.x() > width - 100)
+                velocidad.setX(-velocidad.x());
+        }
+
+        bounds.moveTo(pos_f.toPoint());
     }
 
 
@@ -154,6 +198,8 @@ void Enemigos::update(double dt, int width, int height) {
     bounds.moveTopLeft(QPoint(int(pos_f.x()), int(pos_f.y())));
 }
 
+
+
 void Enemigos::draw(QPainter &p)
 {
     if (!activo) return;
@@ -177,9 +223,12 @@ void Enemigos::activarChoque()
         sprite = spriteChoque;
         enChoque = true;
         tiempoChoque = 0.0;
-        velocidad = QPointF(0,0); // se detiene al chocar
+
+        //  SOLO SE DETIENE MOMENTÁNEAMENTE
+        velocidad *= 0.0;
     }
 }
+
 
 void Enemigos::desactivarChoque()
 {
