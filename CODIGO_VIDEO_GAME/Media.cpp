@@ -37,6 +37,7 @@ void Media::cargarMedia() {
     //Sprites enemigos nivel 2
 
     policia_sprite = ":/sprite/sprite/Poli_W.png";
+    policia_sprite_S = ":/sprite/sprite/Poli_S.png";
     bicicleta_sprite = ":/sprite/sprite/Bici.png";
     // Sprite enemigo tipo rodador (Nivel 1)
     rodador_sprite = ":/sprite/sprite/rodador.png";
@@ -50,6 +51,15 @@ void Media::cargarMedia() {
 
     Choque = ":/sprite/sprite/Choque.png";
     Gameover = ":/Backgraund/Backgraund/gameover.gif";
+    victoriaImg = ":/Backgraund/Backgraund/Win.png";
+
+
+    //Sprite trofeo
+    trofeo_sprite = ":/sprite/sprite/Trofeo.png";
+
+
+    //Sprite IA
+    IA = ":/sprite/sprite/IA.png";
 
 
     // Sonidos (cuando los tengas)

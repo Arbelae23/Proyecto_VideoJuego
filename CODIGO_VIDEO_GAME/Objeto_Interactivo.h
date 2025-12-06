@@ -4,6 +4,9 @@
 #include <QRect>
 #include <QPainter>
 #include <QString>
+#include <QPixmap>
+#include <QPoint>
+#include <QSize>
 
 enum TipoMovimiento {
     TM_Stationary,
@@ -28,6 +31,8 @@ public:
     // estado
     bool activo;
     QRect bounds;  // area actual (pixeles)
+
+    QPixmap sprite;
 
     // metodos
     virtual void update(double dt);

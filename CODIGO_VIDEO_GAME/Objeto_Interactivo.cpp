@@ -18,8 +18,15 @@ void Objeto_Interactivo::update(double dt) {
 
 void Objeto_Interactivo::draw(QPainter &p) {
     if (!activo) return;
-    p.setBrush(Qt::yellow);
-    p.drawRect(bounds);
+
+    //  DIBUJAR SPRITE SI EXISTE
+    if (!sprite.isNull()) {
+        p.drawPixmap(bounds, sprite);
+    } else {
+        // fallback: cuadrado amarillo si falla la imagen
+        p.setBrush(Qt::yellow);
+        p.drawRect(bounds);
+    }
 }
 
 void Objeto_Interactivo::aparecer(const QPoint &pos) {
