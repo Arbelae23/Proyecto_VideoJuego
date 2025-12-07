@@ -86,6 +86,7 @@ void Level1Widget::spawnEnemies() {
         e.tipo_movimiento = Enemigos::TM_Linear;
         // Tamaño del enemigo y posición inicial dentro del rango [moveXMin, moveXMax]
         e.velocidad = QPointF(0, 150 + i*20);          // velocidad hacia abajo
+        e.velocidadOriginal = e.velocidad;             // guardar velocidad original para choques
         e.tamaño = QSize(50,50);
         // Sprite rodador desde Media con rotación alternada
         e.usaSprite = true;
@@ -150,6 +151,11 @@ void Level1Widget::onTick() {
     // actualizar enemigos (lineales)
     for (auto &e : enemigos) {
         if (!e.activo) continue;
+        // Durante explosión, delegar al update del enemigo para temporizar y mantener quieto
+        if (e.enChoque) {
+            e.update(sec, width(), height());
+            continue;
+        }
         if (e.tipo_movimiento == Enemigos::TM_Linear) {
             // Centro vertical base: bajar recto
             e.pos_base.setY(e.pos_base.y() + e.velocidad.y() * sec);
@@ -211,16 +217,15 @@ void Level1Widget::checkCollisions() {
         // Evitar daño repetido: respetar cooldown de golpe y estado de choque
         if (e.enChoque || e.tiempoCooldown > 0.0) continue;
         if (jugador.getBounds().intersects(e.getBounds())) {
-            // colisión: quitar vida y resetear enemigo
+            // colisión: quitar vida y mostrar explosión del enemigo (sin respawn inmediato)
             inter.quitar_vida(1);
             media.reproducir_sonidoChoque();
-            // Activar cooldown del enemigo para que no vuelva a dañar inmediatamente
-            e.tiempoCooldown = e.cooldownGolpe;
-            // respawn enemigo arriba dentro del rango permitido
-            e.pos_f.setY(-150);
-            const int range = std::max(1, moveXMax - moveXMin - e.tamaño.width());
-            e.pos_f.setX(moveXMin + (std::rand() % range));
-            e.bounds.moveTopLeft(QPoint(int(e.pos_f.x()), int(e.pos_f.y())));
+            // Activar estado de choque para detenerlo y mostrar PNG
+            e.enChoque = true;
+            e.tiempoChoque = 0.0;
+            e.velocidad = QPointF(0,0);
+            if (!e.spriteChoque.isNull())
+                e.sprite = e.spriteChoque;
         }
     }
     // sincronizar vidas

@@ -75,6 +75,7 @@ void Level3Widget::spawnObstacles() {
         e.pos_f = QPointF(spawnX, laneSpawnY - i*sepY);
         e.pos_inicial = e.pos_f; // guardar Y inicial para cálculo de crecimiento
         e.velocidad = QPointF(0, 150); // velocidad vertical hacia abajo
+        e.velocidadOriginal = e.velocidad; // conservar velocidad para recuperación tras choque
         // Tamaño inicial mínimo (consistente con minH=24 en onTick)
         e.tamaño = QSize(40, 24);
         // Asignar sprite aleatorio entre 3 opciones con excepciones
@@ -90,6 +91,12 @@ void Level3Widget::spawnObstacles() {
             e.sprite = QPixmap();
         }
         e.spriteNormal = e.sprite;
+        // Sprite de choque para explosión visual
+        try {
+            e.spriteChoque = media.getChoque();
+        } catch (const MediaLoadError &ex) {
+            qDebug() << "Level3: fallo sprite choque (spawn):" << ex.what();
+        }
         e.bounds = QRect(int(e.pos_f.x()), int(e.pos_f.y()), e.tamaño.width(), e.tamaño.height());
         enemigos.push_back(e);
     }
@@ -202,6 +209,11 @@ void Level3Widget::onTick() {
     }
     for (auto &e : enemigos) {
         if (!e.activo) continue;
+        // Si está en estado de choque, dejar que el enemigo gestione su animación y pausa
+        if (e.enChoque) {
+            e.update(sec, width(), height());
+            continue;
+        }
         if (e.tipo_movimiento == Enemigos::TM_Linear) {
             // Movimiento vertical principal
             e.pos_f.setY(e.pos_f.y() + e.velocidad.y() * sec);
@@ -328,6 +340,8 @@ void Level3Widget::checkCollisions() {
         if (!e.activo) continue;
         if (graceActive) continue; // Durante la gracia, no se pierde vida
         if (!collisionEnabledL3) continue; // opción para deshabilitar colisiones en L3
+        // Evitar daño repetido: respetar estado de choque y cooldown del enemigo
+        if (e.enChoque || e.tiempoCooldown > 0.0) continue;
 
         // Hitbox del jugador, recortado adicionalmente sólo para Nivel 3
         QRect playerHB = jugador.getHitbox();
@@ -347,25 +361,15 @@ void Level3Widget::checkCollisions() {
             if (!similarScale) continue;
             inter.quitar_vida(1);
             media.reproducir_sonidoChoque();
-            // respawn inmediato del auto en un carril aleatorio
-            const int laneXs[3] = { laneX1, laneX2, laneX3 };
-            e.pos_f.setY(laneSpawnY);
-            int laneIndex = (e.lane >= 0 && e.lane < 3) ? e.lane : 0;
-            e.pos_f.setX(laneXs[laneIndex]);
-            e.pos_inicial = e.pos_f; // reiniciar referencia de crecimiento
-            // Reiniciar tamaño mínimo inmediato al respawn por choque
-            const double minH2 = 24.0;
-            const double aspect2 = 60.0/36.0;
-            e.tamaño = QSize(int(minH2 * aspect2), int(minH2));
-            e.bounds.setSize(e.tamaño);
-            // Cambiar sprite aleatoriamente en cada respawn por choque (opcional)
-            switch (std::rand() % 3) {
-                case 0: e.sprite = media.getCarro1(); break;
-                case 1: e.sprite = media.getCarro2(); break;
-                default: e.sprite = media.getCarro3(); break;
-            }
-            e.spriteNormal = e.sprite;
-            e.bounds.moveTopLeft(QPoint(int(e.pos_f.x()), int(e.pos_f.y())));
+            // Activar explosión del enemigo tal como en Nivel 2
+            e.yaGolpeo = true;   // marcar que ya golpeó en este ciclo
+            e.enChoque = true;
+            e.tiempoChoque = 0.0;
+            e.velocidad = QPointF(0,0);
+            if (!e.spriteChoque.isNull())
+                e.sprite = e.spriteChoque;
+            // Evitar múltiples daños en el mismo tick por colisiones simultáneas
+            break;
         }
     }
     jugador.vidas = inter.contador_vidas;
