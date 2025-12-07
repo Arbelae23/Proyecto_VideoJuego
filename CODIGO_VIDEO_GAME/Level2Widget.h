@@ -18,7 +18,7 @@ class Level2Widget : public QWidget
 
 public:
     explicit Level2Widget(QWidget *parent = nullptr);
-    void reiniciarNivel2();   // ✅ debe ser PUBLICO
+    void reiniciarNivel2();   // debe ser PUBLICO
 
 protected:
     void paintEvent(QPaintEvent *ev) override;
@@ -86,17 +86,17 @@ private:
     QPixmap victoriaImg;
 
     // =========================
-    // TROFEOS ✅ (ARREGLADO)
+    // TROFEOS (ARREGLADO)
     // =========================
     std::vector<Objeto_Interactivo> trofeos;
 
-    QTimer *timerTrofeos = nullptr;   // ✅ SIEMPRE inicializado
+    QTimer *timerTrofeos = nullptr;   // SIEMPRE inicializado
     double tiempoTrofeoVida = 5.0;    // dura 5 segundos
     int totalTrofeosObjetivo = 5;     // los que debes recoger para ganar
     int trofeosRecolectados = 0;
 
 
-    void spawnTrofeo();               // ✅ GENERADOR
+    void spawnTrofeo();               // GENERADOR
 
     // =========================
     // TIEMPO DEL NIVEL

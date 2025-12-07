@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     level1->setGeometry(10, 0, W, H);
 
     level2->setParent(ui->pageLevel2);
-    level2->setGeometry(10, 0, W, H);   // ✅ AHORA IGUAL QUE LOS OTROS
+    level2->setGeometry(10, 0, W, H);   // AHORA IGUAL QUE LOS OTROS
 
     level3->setParent(ui->pageLevel3);
     level3->setGeometry(10, 0, W, H);

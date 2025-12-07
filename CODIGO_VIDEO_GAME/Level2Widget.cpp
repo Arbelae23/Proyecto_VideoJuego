@@ -73,19 +73,19 @@ void Level2Widget::setupEnemies()
         e.tipo_movimiento = Enemigos::TM_SenoDown;
         e.tamaño = QSize(120, 80);
 
-        // ✅ ESPACIADO REAL EN TODO EL ANCHO
+        // ESPACIADO REAL EN TODO EL ANCHO
         int separacionX = width() / 3;
         e.pos_base.setX(i * separacionX + separacionX /2);
 
-        // ✅ ESPACIADO VERTICAL CONTROLADO
+        // ESPACIADO VERTICAL CONTROLADO
         e.pos_base.setY(50 + i * 100);
 
-        // ✅ VELOCIDADES DISTINTAS
+        // VELOCIDADES DISTINTAS
         e.velocidad = QPointF(0, 100 + i * 40 + rand() % 30);
 
         e.velocidadOriginal = e.velocidad;
 
-        // ✅ SENO DISTINTO PARA CADA UNO
+        // SENO DISTINTO PARA CADA UNO
         e.amplitud_seno = 50 + i * 15;
         e.frecuencia_seno = 1.5 + (i * 0.4);
 
@@ -351,7 +351,7 @@ void Level2Widget::onTick()
 
 
 
-    // ⏱️ TIEMPO
+    // TIEMPO
     tiempoRestante -= dt;
 
     if (tiempoRestante <= 0 && !nivelGanado)
@@ -426,7 +426,7 @@ void Level2Widget::onTick()
 
 void Level2Widget::checkCollisions()
 {
-    // ❌ Si ya hay Game Over, no revisar más colisiones
+    // Si ya hay Game Over, no revisar más colisiones
     if (mostrarGameOver)
         return;
 

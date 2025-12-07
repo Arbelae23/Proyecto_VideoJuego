@@ -209,6 +209,14 @@ void Level3Widget::onTick() {
     }
     for (auto &e : enemigos) {
         if (!e.activo) continue;
+        // Descontar cooldown manualmente para re-habilitar daño tras explosión
+        if (e.tiempoCooldown > 0.0) {
+            e.tiempoCooldown -= sec;
+            if (e.tiempoCooldown < 0.0) e.tiempoCooldown = 0.0;
+            e.yaGolpeo = true;
+        } else {
+            e.yaGolpeo = false;
+        }
         // Si está en estado de choque, dejar que el enemigo gestione su animación y pausa
         if (e.enChoque) {
             e.update(sec, width(), height());
