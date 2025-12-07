@@ -6,6 +6,7 @@
         <file>Backgraund/camino.png</file>
         <file>Backgraund/gameover.gif</file>
         <file>Backgraund/Win.png</file>
+        <file>Backgraund/fon_menu.png</file>
     </qresource>
     <qresource prefix="/sprite">
         <file>sprite/Car1.png</file>

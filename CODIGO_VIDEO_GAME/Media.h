@@ -24,6 +24,7 @@ public:
     QString background_nivel;
     QString background_nivel2;
     QString background_nivel3;
+    QString background_menu;
     QString jugador1_sprite;
 
     // Imagen de carretera para scroll en Nivel 1
@@ -104,6 +105,7 @@ public:
     const QPixmap& getVictoria();
     const QPixmap& getBackgroundNivel1();
     const QPixmap& getBackgroundNivel2();
+    const QPixmap& getBackgroundMenu();
     // Nivel 2: enemigos
     const QPixmap& getPoliciaW();
     const QPixmap& getPoliciaS();
@@ -132,6 +134,7 @@ private:
     QPixmap* victoriaPix = nullptr; // pantalla victoria
     QPixmap* bg1Pix = nullptr;    // fondo nivel 1
     QPixmap* bg2Pix = nullptr;    // fondo nivel 2
+    QPixmap* menuBgPix = nullptr; // fondo del menú principal
     // Nivel 2: enemigos cache
     QPixmap* poliWPix = nullptr;
     QPixmap* poliSPix = nullptr;

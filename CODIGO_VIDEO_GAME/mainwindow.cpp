@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "Media.h"
+#include <QDebug>
+#include <QPainter>
+#include <QResizeEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,6 +13,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     const int W = 1330;
     const int H = 700;
+
+    // Fondo del menú desde Media (dibujado manualmente para evitar duplicación)
+    try {
+        Media media;
+        const QPixmap &menuBg = media.getBackgroundMenu();
+        if (!menuBg.isNull()) {
+            menuBgOrig = menuBg;
+            ui->pageMenu->installEventFilter(this);
+            ui->pageMenu->setAttribute(Qt::WA_OpaquePaintEvent);
+        }
+    } catch (const MediaLoadError &ex) {
+        qDebug() << "Menu background load failed:" << ex.what();
+    }
 
     // Crear niveles
     level1 = new Level1Widget();
@@ -38,6 +55,32 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::returnToMenu);
     connect(level2, &Level2Widget::volverAlMenu,
             this, &MainWindow::returnToMenu);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    QMainWindow::resizeEvent(event);
+    if (ui && ui->pageMenu) {
+        ui->pageMenu->update();
+    }
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if (obj == ui->pageMenu && event->type() == QEvent::Paint) {
+        QPainter p(ui->pageMenu);
+        if (!menuBgOrig.isNull()) {
+            // Escalar a tamaño fijo solicitado y dibujar en la esquina superior izquierda
+            QPixmap scaled = menuBgOrig.scaled(QSize(menuBgTargetW, menuBgTargetH), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            p.drawPixmap(0, 0, scaled);
+            // Rellenar horizontalmente el espacio sobrante a la derecha para quitar el vacío
+            int remaining = ui->pageMenu->width() - menuBgTargetW;
+            if (remaining > 0) {
+                QPixmap filler = menuBgOrig.scaled(QSize(remaining, menuBgTargetH), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                p.drawPixmap(menuBgTargetW, 0, filler);
+            }
+        }
+        return true; // ya pintado
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
 
 MainWindow::~MainWindow() {

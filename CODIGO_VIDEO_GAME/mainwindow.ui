@@ -24,6 +24,9 @@
      </rect>
     </property>
     <widget class="QWidget" name="pageMenu">
+     <property name="styleSheet">
+      <string notr="true"></string>
+     </property>
      <widget class="QLabel" name="labelTitle">
       <property name="geometry">
        <rect>
@@ -37,7 +40,7 @@
        <string notr="true">font-size:32px; font-weight:bold;</string>
       </property>
       <property name="text">
-       <string>LA REVOLUCIÓN AUTOMOTRIZ</string>
+       <string>EVODRIVE</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>

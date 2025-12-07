@@ -14,6 +14,7 @@ void Media::cargarMedia() {
     camino            = ":/Backgraund/Backgraund/camino.png";
     background_nivel2 = ":/Backgraund/Backgraund/fon2.png";
     background_nivel3 = ":/Backgraund/Backgraund/fon3.png";
+    background_menu   = ":/Backgraund/Backgraund/fon_menu.png";
 
     // Sprites del jugador
     jugador1_sprite = ":/sprite/sprite/Car1.png";
@@ -265,6 +266,17 @@ const QPixmap& Media::getBackgroundNivel2() {
         }
     }
     return *bg2Pix;
+}
+
+const QPixmap& Media::getBackgroundMenu() {
+    if (!menuBgPix) {
+        menuBgPix = new QPixmap();
+        if (!menuBgPix->load(background_menu)) {
+            *menuBgPix = QPixmap();
+            throw MediaLoadError("Failed to load background_menu");
+        }
+    }
+    return *menuBgPix;
 }
 
 // --- Nivel 2: enemigos ---
